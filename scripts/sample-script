@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+## -- Python Setup -- ##
+import os.path
+import sys
+
+PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, PROJECT_ROOT)
+sys.path.insert(0, os.path.join(PROJECT_ROOT, '..'))
+
+## -- Django Setup -- ##
+from django.core.management import setup_environ
+from thialfi import settings
+setup_environ(settings)
+
+## -- Here comes the script -- ##
+from app.models import *
+
+for group in Group.objects.all():
+	print u"[%s]" % group.name
+	for contact in group.contacts.all():
+		is_primary = (contact == group.contact_primary)
+		print u" %s %s" % (is_primary and ">" or " ", contact.name)
+	if group.contact_primary not in group.contacts.all():
+		print u"!> %s" % group.contact_primary.name
+	print

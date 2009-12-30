@@ -1,4 +1,4 @@
-from models import Contact, Group, Recipient, Message, Delivery
+from models import *
 from django.contrib import admin
 
 admin.site.register(Contact)

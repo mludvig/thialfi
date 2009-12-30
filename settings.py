@@ -1,5 +1,13 @@
 # Django settings for thialfi project.
 
+## -- Python Setup -- ##
+import os.path
+import sys
+
+PROJECT_ROOT = os.path.dirname(__file__)
+sys.path.insert(0, PROJECT_ROOT)
+sys.path.insert(0, os.path.join(PROJECT_ROOT, '..'))
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -10,7 +18,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'sqlite3'    # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = 'thialfi.sqlite'             # Or path to database file if using sqlite3.
+DATABASE_NAME = os.path.join(PROJECT_ROOT, 'thialfi.sqlite')             # Or path to database file if using sqlite3.
 DATABASE_USER = ''             # Not used with sqlite3.
 DATABASE_PASSWORD = ''         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
