@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo $* > /tmp/rcv.$$
+env >> /tmp/rcv.$$
+echo >> /tmp/rcv.$$
+cat >> /tmp/rcv.$$
+exit 1
