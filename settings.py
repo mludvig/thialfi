@@ -8,6 +8,17 @@ PROJECT_ROOT = os.path.dirname(__file__)
 sys.path.insert(0, PROJECT_ROOT)
 sys.path.insert(0, os.path.join(PROJECT_ROOT, '..'))
 
+## Figure out media revision to avoid caching problems
+try:
+	print "MEDIA_REV=%s (cached)" % MEDIA_REV
+except:
+	try:
+		MEDIA_REV = os.popen("/usr/bin/hg identify -i").readline().strip()
+	except:
+		import datetime
+		MEDIA_REV = datetime.datetime.now().strftime("%s")
+	print "MEDIA_REV=%s" % MEDIA_REV
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -77,6 +88,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+	PROJECT_ROOT+'/templates',
 )
 
 INSTALLED_APPS = (

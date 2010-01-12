@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+{% load logixtags %}
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Thialfi : text messaging gateway</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="distribution" content="global" />
+<meta name="revisit-after" content="30 days" />
+{% block extrahead %}{% endblock %}
+</head>
+
+<body class="yui-skin-sam" id="body">
+<h1>Thialfi</h1>
+{% block contentsub %}
+{# Create empty "contentsub" on pages that use "contentfull" to remove it #}
+<div id="mainrightsub">
+<h1>{% block page_title %}{% endblock %}</h1>
+{% block content %}{% endblock %}
+</div>
+{% endblock %}
+{% block contentfull %}{% endblock %}
+</body>
+</html>
