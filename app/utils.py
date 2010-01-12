@@ -19,7 +19,8 @@ def render_template(request, *args, **kwargs):
 	if len(args) > 1:
 		args[1].update(MEDIA_REV = settings.MEDIA_REV)
 	else:
-		args.append({'MEDIA_REV' : settings.MEDIA_REV})
+		## Convert from tuple to list and add list member
+		args = [ args[0], {'MEDIA_REV' : settings.MEDIA_REV} ]
 	return django.shortcuts.render_to_response(*args, **kwargs)
 
 def get_object_or_404(*args, **kwargs):

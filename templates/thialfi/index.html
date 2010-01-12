@@ -1,9 +1,24 @@
-{% extends "msol/_base.html" %}
+{% extends "_base.html" %}
 
 {% block contentsub %}
 {# just to kill it from rendering in _base.html #}
 {% endblock %}
 
 {% block contentfull %}
-<h2>template, yay!</h2>
+<h2>On-call groups</h2>
+<dl class="oncall-list">
+{% for group in groups %}
+<dt>{{ group }}</dt>
+<dd>{{ group.contact_primary.name }} <em>({{ group.contact_primary.sms_number }})</em></dd>
+{% for recipient in group.recipient_set.all %}
+<dd><a href="mailto:{{ recipient }}@{{ recipient.domain }}">{{ recipient }}</a></dd>
+{% endfor %}
+{% endfor %}
+</dl>
+<h2>Messages in the queue</h2>
+<table class="messages-list">
+{% for message in messages %}
+<tr><td>{{ message.id }}.</td><td>{{ message }}</td><td>{{ message.dt_received }}</dt></tr>
+{% endfor %}
+</table>
 {% endblock %}

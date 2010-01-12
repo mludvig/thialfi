@@ -35,6 +35,8 @@ DATABASE_PASSWORD = 'MoiIG22QIiry'     # Not used with sqlite3.
 DATABASE_HOST = 'pinocchio.e-it.co.nz' # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
+RCPT_DOMAIN = "sms.e-it.co.nz"
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.

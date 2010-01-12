@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 __all__ = []
@@ -27,6 +28,8 @@ class Recipient(models.Model):
 
 	def __unicode__(self):
 		return unicode(self.address)
+	def domain(self):
+		return settings.RCPT_DOMAIN
 __all__.append("Recipient")
 
 # Message-related models
@@ -42,9 +45,9 @@ class Message(models.Model):
 	recipient = models.ForeignKey(Recipient)
 	# Timestamps
 	dt_received = models.DateTimeField(auto_now = True)
-	dt_delivered = models.DateTimeField()
-	dt_escalated = models.DateTimeField()
-	dt_expired = models.DateTimeField()
+	dt_delivered = models.DateTimeField(blank = True, null = True)
+	dt_escalated = models.DateTimeField(blank = True, null = True)
+	dt_expired = models.DateTimeField(blank = True, null = True)
 
 	def __unicode__(self):
 		return self.sms_body[:100]
