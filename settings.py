@@ -31,11 +31,15 @@ MANAGERS = ADMINS
 DATABASE_ENGINE = 'mysql'              # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 DATABASE_NAME = 'thialfi'              # Or path to database file if using sqlite3.
 DATABASE_USER = 'thialfi'              # Not used with sqlite3.
-DATABASE_PASSWORD = 'MoiIG22QIiry'     # Not used with sqlite3.
-DATABASE_HOST = 'pinocchio.e-it.co.nz' # Set to empty string for localhost. Not used with sqlite3.
+DATABASE_PASSWORD = 'thialfi'     # Not used with sqlite3.
+DATABASE_HOST = 'localhost' # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
-RCPT_DOMAIN = "sms.e-it.co.nz"
+RCPT_DOMAIN = "sms.your.domain"
+
+SMS_ENGINE = "Sms.GwClickatell"	# Only Clickatell is supported for now
+# Fill in APIID, USERNAME and PASSWORD of your Clickatell account
+SMS_URL_PATTERN = "https://api.clickatell.com/http/sendmsg?api_id=APIID&user=USERNAME&password=PASSWORD&to=%(recipient)s&text=%(message)s"
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -100,3 +104,5 @@ INSTALLED_APPS = (
 	'django.contrib.admin',
 	'app',
 )
+
+from settings_local import *
