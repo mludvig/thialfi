@@ -8,16 +8,17 @@ PROJECT_ROOT = os.path.dirname(__file__)
 sys.path.insert(0, PROJECT_ROOT)
 sys.path.insert(0, os.path.join(PROJECT_ROOT, '..'))
 
-## Figure out media revision to avoid caching problems
-try:
-	print "MEDIA_REV=%s (cached)" % MEDIA_REV
-except:
-	try:
-		MEDIA_REV = os.popen("/usr/bin/hg identify -i").readline().strip()
-	except:
-		import datetime
-		MEDIA_REV = datetime.datetime.now().strftime("%s")
-	print "MEDIA_REV=%s" % MEDIA_REV
+### Figure out media revision to avoid caching problems
+#try:
+#	print "MEDIA_REV=%s (cached)" % MEDIA_REV
+#except:
+#	try:
+#		MEDIA_REV = os.popen("/usr/bin/hg identify -i").readline().strip()
+#	except:
+#		import datetime
+#		MEDIA_REV = datetime.datetime.now().strftime("%s")
+#	print "MEDIA_REV=%s" % MEDIA_REV
+MEDIA_REV="fixme"
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -37,7 +38,7 @@ DATABASE_PORT = ''             # Set to empty string for default. Not used with 
 
 RCPT_DOMAIN = "sms.your.domain"
 
-SMS_ENGINE = "Sms.GwClickatell"	# Only Clickatell is supported for now
+SMS_ENGINE = "GwClickatell"		# Only Clickatell is supported for now
 # Fill in APIID, USERNAME and PASSWORD of your Clickatell account
 SMS_URL_PATTERN = "https://api.clickatell.com/http/sendmsg?api_id=APIID&user=USERNAME&password=PASSWORD&to=%(recipient)s&text=%(message)s"
 

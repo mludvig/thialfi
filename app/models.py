@@ -1,6 +1,9 @@
 from django.conf import settings
 from django.db import models
 
+from datetime import datetime
+from sms import smsgw
+
 __all__ = []
 # Recipient-related models
 class Contact(models.Model):
@@ -51,6 +54,31 @@ class Message(models.Model):
 
 	def __unicode__(self):
 		return self.sms_body[:100]
+	
+	def despatch(self):
+		if self.dt_delivered or self.dt_expired:
+			return
+		if self.delivery_set.all():
+			## Delivery in progress
+			## - update delivery status
+			## - if too old escalate or expire message
+			self.update_status()
+		else:
+			## No delivery attempted yet 
+			## - despatch now
+			delivery = Delivery(message = self, contact = self.recipient.group.contact_primary)
+			sms_id, status = smsgw.despatch(self, delivery.contact)
+			print "(%s, %s, %s)" % (delivery.contact.sms_number, sms_id, status)
+			if sms_id:
+				delivery.sms_id = sms_id
+				delivery.status = status
+				delivery.dt_despatched = datetime.now()
+				delivery.save()
+
+	def update_status(self):
+		for delivery in self.delivery_set.all():
+			delivery.update_status()
+
 __all__.append("Message")
 
 class Delivery(models.Model):
@@ -58,7 +86,7 @@ class Delivery(models.Model):
 	contact = models.ForeignKey(Contact)
 	sms_id = models.CharField(max_length=100)
 	dt_despatched = models.DateTimeField(auto_now = True)
-	dt_status = models.DateTimeField()
+	dt_status = models.DateTimeField(blank = True, null = True)
 	status = models.CharField(max_length=100)
 
 	class Meta:
@@ -66,4 +94,16 @@ class Delivery(models.Model):
 	
 	def __unicode__(self):
 		return u"to:%s @%s" % (self.contact, self.dt_despatched)
+
+	def update_status(self):
+		if not self.status.startswith("DELIVERED"):
+			status = smsgw.get_status(self.sms_id)
+			if status != self.status:
+				self.status = status
+				self.dt_status = datetime.now()
+				self.save()
+		if self.status.startswith("DELIVERED") and not self.message.dt_delivered:
+			self.message.dt_delivered = self.dt_status
+			self.message.save()
+
 __all__.append("Delivery")

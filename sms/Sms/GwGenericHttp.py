@@ -2,8 +2,8 @@ import urllib
 import urllib2
 
 ## Must be full path because this module is imported via __import__()
-from Sms.Config import Config
-from Sms.Sender import SmsError
+from Config import Config
+from Sender import SmsError
 
 class SmsDriver(object):
 	def __init__(self):
