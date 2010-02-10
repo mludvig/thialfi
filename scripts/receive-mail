@@ -1,7 +1,77 @@
-#!/bin/sh
+#!/usr/bin/env python
 
-echo $* > /tmp/rcv.$$
-env >> /tmp/rcv.$$
-echo >> /tmp/rcv.$$
-cat >> /tmp/rcv.$$
-exit 1
+## -- Python Setup -- ##
+import os.path
+import sys
+
+PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, PROJECT_ROOT)
+sys.path.insert(0, os.path.join(PROJECT_ROOT, '..'))
+
+## -- Django Setup -- ##
+from django.core.management import setup_environ
+from thialfi import settings
+setup_environ(settings)
+
+## -- Here comes the script -- ##
+import syslog
+import re
+import email
+
+from app.models import *
+
+def log(level, message):
+	if not message.endswith("\n"):
+		message += "\n"
+	sys.stderr.write(message)
+	syslog.syslog(level, message)
+
+def error(message):
+	log(syslog.LOG_ERR, message)
+
+def debug(message):
+	log(syslog.LOG_DEBUG, message)
+
+# Setup SYSLOG
+syslog.openlog(sys.argv[0].split("/")[-1], syslog.LOG_PID, syslog.LOG_MAIL)
+
+# Get the sender and recipient from command line args
+try:
+	sender = sys.argv[1]
+	recipients = sys.argv[2:]
+except IndexError:
+	error("Not enough arguments: argv=%r" % sys.argv)
+	sys.exit(1)
+
+# Read in the message
+message_email = email.message_from_file(sys.stdin)
+
+print "MAIL FROM:  %s" % sender
+print "RCPT TO(%d): %s" % (len(recipients), ",".join(recipients))
+
+print "Subject:    %s" % message_email.get("subject")
+print "Message-ID: %s" % message_email.get("message-id").strip("<>()")
+
+for recipient in recipients:
+	m = re.match("\s*(.*)@(.*)", recipient)
+	if not m:
+		warn("Invalid recipient: %r" % recipient)
+		continue
+	rcpt_name, domain = m.groups(0)
+	rcpt = Recipient.objects.filter(address = rcpt_name)
+	if not rcpt:
+		warn("Recipient not registered: %s" % recipient)
+		continue
+	msg = Message(recipient = rcpt[0])
+	msg.header, msg.body = message_email.as_string().split("\n\n", 1)
+	msg.hdr_sender = sender
+	msg.hdr_recipient = recipient
+	msg.hdr_message_id = message_email.get("message-id").strip("<>()")
+	msg.hdr_subject = message_email.get("subject")
+	## Format SMS text - this should be configurable (per-sender rules?)
+	msg.sms_body = msg.hdr_sender + "|" + msg.hdr_subject[:55] + "|" + msg.body[:65].strip()
+	msg.save()
+
+	print "Message:    %s" % msg.sms_body
+	print "Contact:    %s" % msg.recipient.group.contact_primary
+	msg.despatch()

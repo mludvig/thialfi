@@ -42,6 +42,8 @@ class Message(models.Model):
 	# The "body" converted to sms format
 	sms_body = models.TextField()
 	# Some useful headers extracted
+	hdr_subject = models.CharField(max_length=500)
+	hdr_sender = models.CharField(max_length=500)
 	hdr_recipient = models.CharField(max_length=500)
 	hdr_message_id = models.CharField(max_length=500)
 	# Resolved recipient
@@ -53,7 +55,7 @@ class Message(models.Model):
 	dt_expired = models.DateTimeField(blank = True, null = True)
 
 	def __unicode__(self):
-		return self.sms_body[:100]
+		return self.sms_body
 	
 	def despatch(self):
 		if self.dt_delivered or self.dt_expired:
