@@ -21,7 +21,7 @@ for message in Message.objects.filter(dt_delivered__isnull = True):
 	if message.delivery_set.all():
 		for delivery in message.delivery_set.all():
 			delivery.update_status()
-			print " * %s->%s : %s" % (delivery.dt_despatched, delivery.contact.number, delivery.status)
+			print " * %s->%s : %s" % (delivery.dt_despatched, delivery.contact.sms_number, delivery.status)
 	else:
 		print " * Despatching message"
 		message.despatch()

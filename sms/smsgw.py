@@ -9,7 +9,10 @@ def despatch(message, contact):
 	sms_id = sender.send(message.sms_body, contact.sms_number)
 	return sms_id, sender.get_status(sms_id)
 
-def update_status(sms_id):
+def get_status(sms_id):
+	"""
+	get_status(sms_id) -> returns Sms.Sender.SmsStatus() object
+	"""
 	sender = SmsSender()
 	status = sender.get_status(sms_id)
 	return status

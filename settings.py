@@ -40,7 +40,10 @@ RCPT_DOMAIN = "sms.your.domain"
 
 SMS_ENGINE = "GwClickatell"		# Only Clickatell is supported for now
 # Fill in APIID, USERNAME and PASSWORD of your Clickatell account
-SMS_URL_PATTERN = "https://api.clickatell.com/http/sendmsg?api_id=APIID&user=USERNAME&password=PASSWORD&to=%(recipient)s&text=%(message)s"
+SMS_AUTH_DATA = "api_id=APIID&user=USERNAME&password=PASSWORD"
+# Don't change the following SMS_* settings 
+SMS_SEND_PATTERN = "https://api.clickatell.com/http/sendmsg?%(auth)s&to=%(recipient)s&text=%(message)s&concat=3&escalate=1&queue=1"
+SMS_STATUS_PATTERN = "https://api.clickatell.com/http/querymsg?%(auth)s&apimsgid=%(messageid)s"
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name

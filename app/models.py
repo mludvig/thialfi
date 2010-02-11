@@ -70,17 +70,16 @@ class Message(models.Model):
 			## - despatch now
 			delivery = Delivery(message = self, contact = self.recipient.group.contact_primary)
 			sms_id, status = smsgw.despatch(self, delivery.contact)
-			print "(%s, %s, %s)" % (delivery.contact.sms_number, sms_id, status)
+			print "(%s, %s, %s)" % (delivery.contact.sms_number, sms_id, status.code)
 			if sms_id:
 				delivery.sms_id = sms_id
-				delivery.status = status
+				delivery.status = str(status)
 				delivery.dt_despatched = datetime.now()
 				delivery.save()
 
 	def update_status(self):
 		for delivery in self.delivery_set.all():
 			delivery.update_status()
-
 __all__.append("Message")
 
 class Delivery(models.Model):
@@ -95,17 +94,16 @@ class Delivery(models.Model):
 		verbose_name_plural = "Deliveries"
 	
 	def __unicode__(self):
-		return u"to:%s @%s" % (self.contact, self.dt_despatched)
+		return u"to:%s @%s (%s)" % (self.contact, self.dt_despatched, self.status.split(" ")[0])
 
 	def update_status(self):
 		if not self.status.startswith("DELIVERED"):
 			status = smsgw.get_status(self.sms_id)
-			if status != self.status:
-				self.status = status
+			if str(status) != self.status:
+				self.status = str(status)
 				self.dt_status = datetime.now()
 				self.save()
 		if self.status.startswith("DELIVERED") and not self.message.dt_delivered:
 			self.message.dt_delivered = self.dt_status
 			self.message.save()
-
 __all__.append("Delivery")

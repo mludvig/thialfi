@@ -11,11 +11,15 @@ class Config(object):
 	_parsed_files = []
 
 	sms_engine = settings.SMS_ENGINE
-	sms_url_pattern = settings.SMS_URL_PATTERN
+	#sms_send_pattern = settings.SMS_SEND_PATTERN % { 'auth' : settings.SMS_AUTH_DATA }
+	#sms_status_pattern = settings.SMS_STATUS_PATTERN % { 'auth' : settings.SMS_AUTH_DATA }
+	sms_send_pattern = settings.SMS_SEND_PATTERN.replace("%(auth)s", settings.SMS_AUTH_DATA)
+	sms_status_pattern = settings.SMS_STATUS_PATTERN.replace("%(auth)s", settings.SMS_AUTH_DATA)
 	sms_timestamp_format = "%m/%d %H:%M"
 	## Example config for Clickatell:
 	## sms_engine = "Sms.GwClickatell"
-	## sms_url_pattern = "https://api.clickatell.com/http/sendmsg?api_id=APIID&user=USERNAME&password=PASSWORD&to=%(recipient)s&text=%(message)s"
+	## sms_send_pattern = "https://api.clickatell.com/http/sendmsg?api_id=APIID&user=USERNAME&password=PASSWORD&to=%(recipient)s&text=%(message)s"
+	## sms_query_pattern = "https://api.clickatell.com/http/querymsg?api_id=APIID&user=USERNAME&password=PASSWORD&apimsgid=%(messageid)s"
 	## replace APIID, USERNAME and PASSWORD with the values of your Clickatell account
 
 	## Creating a singleton
