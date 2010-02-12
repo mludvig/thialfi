@@ -69,7 +69,7 @@ for recipient in recipients:
 	msg.hdr_message_id = message_email.get("message-id").strip("<>()")
 	msg.hdr_subject = message_email.get("subject")
 	## Format SMS text - this should be configurable (per-sender rules?)
-	msg.sms_body = msg.hdr_sender + "|" + msg.hdr_subject[:55] + "|" + msg.body[:65].strip()
+	msg.sms_body = str(msg.recipient) + "|" + msg.hdr_subject[:55] + "|" + msg.body[:65].strip()
 	msg.save()
 
 	print "Message:    %s" % msg.sms_body
