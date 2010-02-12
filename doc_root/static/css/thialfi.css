@@ -15,15 +15,21 @@ h1#page-title {
 	border: black 1px dotted;
 }
 
-table.messages-list {
+h3.table-header {
+	padding-left: 4px;
+}
+
+a {
+	color: navy;
+	text-decoration: none;
+	font-style: oblique;
+}
+
+table.messages-list, table.message-detail {
 	width: 100%;
 }
 
-table.messages-list tr {
-	margin: 0px;
-}
-
-table.messages-list tr td {
+table.messages-list tr td, table.message-detail tr td {
 	border: #ddd 1px dotted;
 	padding: 3px;
 }
@@ -48,3 +54,7 @@ table.messages-list tr.unknown {
 	background-color: #eec;
 }
 
+table.message-detail tr td.label {
+	font-weight: bold;
+	width: 150px;
+}

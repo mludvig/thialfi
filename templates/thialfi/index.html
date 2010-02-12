@@ -8,7 +8,7 @@
 <h2>Messages in the queue</h2>
 <table class="messages-list">
 {% for message in messages %}
-<tr class="{{ message.newest_status }}"><td>{{ message.recipient }}</td><td>{{ message }}</td><td>{{ message.dt_received }}</td><td>{{ message.newest_status }}</td></tr>
+<tr class="{{ message.newest_status }}"><td class="recipient">{{ message.recipient }}</td><td class="message"><a href="{% url app.views.detail message_id=message.id %}">{{ message }}</a></td><td class="received">{{ message.dt_received }}</td><td class="status">{{ message.newest_status }}</td></tr>
 {% endfor %}
 </table>
 <h2>On-call groups</h2>

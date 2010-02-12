@@ -1,0 +1,31 @@
+{% extends "_base.html" %}
+
+{% block contentsub %}
+{# just to kill it from rendering in _base.html #}
+{% endblock %}
+
+{% block contentfull %}
+<h3 class="table-header">Message for <u>{{ message.recipient.group }}</u> via <u>{{ message.recipient }}</u></h3>
+<table class="message-detail">
+<tr><td class="label">From:</td><td class="content">{{ message.hdr_sender }}</td></tr>
+<tr><td class="label">To:</td><td class="content">{{ message.hdr_recipient }}</td></tr>
+<tr><td class="label">Subject:</td><td class="content">{{ message.hdr_subject }}</td></tr>
+<tr><td class="label">Body:</td><td class="content"><pre>{{ message.body }}</pre></td></tr>
+<tr><td class="label">Received:</td><td class="content">{{ message.dt_received }}</td></tr>
+<tr><td class="label">Delivered:</td><td class="content">{{ message.dt_delivered }}</td></tr>
+<!--
+<tr><td class="label">Escalated:</td><td class="content">{{ message.dt_delivered }}</td></tr>
+<tr><td class="label">Expired:</td><td class="content">{{ message.dt_delivered }}</td></tr>
+-->
+</table>
+<h3 class="table-header">Delivery attempts</h3>
+{% for delivery in message.delivery_set.all %}
+<table class="message-detail">
+<tr><td class="label">Recipient:</td><td>{{ delivery.contact }}</td></tr>
+<tr><td class="label">Status:</td><td>{{ delivery.status }}</td></tr>
+<tr><td class="label">Despatched:</td><td>{{ delivery.dt_despatched }}</td></tr>
+<tr><td class="label">Status updated:</td><td>{{ delivery.dt_status }}</td></tr>
+<tr><td class="label">SMS ID:</td><td>{{ delivery.sms_id }}</td></tr>
+</table>
+{% endfor %}
+{% endblock %}

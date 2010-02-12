@@ -5,7 +5,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-	(r'^$', 'app.views.index'),
+	(r'^$', 'app.views.index', { 'template' : 'thialfi/index.html' }),
+	(r'^detail/(?P<message_id>\d+)/$', 'app.views.detail', { 'template' : 'thialfi/detail.html' }),
     (r'^admin/', include(admin.site.urls)),
 )
 
