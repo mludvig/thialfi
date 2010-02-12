@@ -1,0 +1,50 @@
+body {
+	background-color: #ddd;
+	margin-left: 2in;
+	margin-right: 2in;
+}
+
+h1#page-title {
+	background-color: #eee;
+	padding: 0.5em 40px 0.5em 40px;
+}
+
+#body-content {
+	background-color: white;
+	padding: 20px 40px 20px 40px;
+	border: black 1px dotted;
+}
+
+table.messages-list {
+	width: 100%;
+}
+
+table.messages-list tr {
+	margin: 0px;
+}
+
+table.messages-list tr td {
+	border: #ddd 1px dotted;
+	padding: 3px;
+}
+
+table.messages-list tr.delivered {
+	background-color: #dfd;
+}
+
+table.messages-list tr.error {
+	background-color: #fce;
+}
+
+table.messages-list tr.expired {
+	background-color: #fbd;
+}
+
+table.messages-list tr.transit {
+	background-color: #ffd;
+}
+
+table.messages-list tr.unknown {
+	background-color: #eec;
+}
+

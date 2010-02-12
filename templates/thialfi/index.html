@@ -5,6 +5,12 @@
 {% endblock %}
 
 {% block contentfull %}
+<h2>Messages in the queue</h2>
+<table class="messages-list">
+{% for message in messages %}
+<tr class="{{ message.newest_status }}"><td>{{ message.recipient }}</td><td>{{ message }}</td><td>{{ message.dt_received }}</td><td>{{ message.newest_status }}</td></tr>
+{% endfor %}
+</table>
 <h2>On-call groups</h2>
 <dl class="oncall-list">
 {% for group in groups %}
@@ -15,10 +21,4 @@
 {% endfor %}
 {% endfor %}
 </dl>
-<h2>Messages in the queue</h2>
-<table class="messages-list">
-{% for message in messages %}
-<tr><td>{{ message.id }}.</td><td>{{ message }}</td><td>{{ message.dt_received }}</dt></tr>
-{% endfor %}
-</table>
 {% endblock %}

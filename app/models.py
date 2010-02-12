@@ -80,6 +80,14 @@ class Message(models.Model):
 	def update_status(self):
 		for delivery in self.delivery_set.all():
 			delivery.update_status()
+
+	def newest_status(self):
+		try:
+			delivery = self.delivery_set.order_by('dt_status')[0]
+			return delivery.status.split(" ")[0].lower()
+		except IndexError:
+			return "unknown"
+
 __all__.append("Message")
 
 class Delivery(models.Model):

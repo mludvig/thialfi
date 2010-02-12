@@ -3,13 +3,13 @@
 <head>
 <title>Thialfi : text messaging gateway</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="distribution" content="global" />
-<meta name="revisit-after" content="30 days" />
+<link rel="stylesheet" type="text/css" href="/static/css/thialfi.css?{{ MEDIA_REV }}" />
 {% block extrahead %}{% endblock %}
 </head>
 
 <body class="yui-skin-sam" id="body">
-<h1>Thialfi</h1>
+<h1 id="page-title">Thialfi the messenger</h1>
+<div id="body-content">
 {% block contentsub %}
 {# Create empty "contentsub" on pages that use "contentfull" to remove it #}
 <div id="mainrightsub">
@@ -18,5 +18,6 @@
 </div>
 {% endblock %}
 {% block contentfull %}{% endblock %}
+</div>
 </body>
 </html>
