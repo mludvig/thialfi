@@ -12,3 +12,9 @@ thialfi   unix  -       n       n       -       -       pipe
 ---------------------------
 - Update 'domain' and 'transport' files
 - Run 'make'
+
+4) /etc/crontab (or some other crontab if you like)
+---------------
+## Thialfi - update outstanding messages' status
+*/5 * * * *   nobody  /srv/thialfi/scripts/send-all > /dev/null
+

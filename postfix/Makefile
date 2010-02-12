@@ -1,10 +1,10 @@
-DB=\
-       domain.db \
-       transport.db
+DB= \
+	domain.db \
+	transport.db
 
 all: $(DB)
-       postfix reload
+	postfix reload
 
 %.db: %
-       postmap $^
+	postmap $^
 
