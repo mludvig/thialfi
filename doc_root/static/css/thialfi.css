@@ -47,7 +47,7 @@ table.messages-list tr.expired {
 }
 
 table.messages-list tr.transit {
-	background-color: #ffd;
+	background-color: #fdf;
 }
 
 table.messages-list tr.unknown {
