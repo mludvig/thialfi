@@ -1,11 +1,15 @@
 from django.http import HttpResponse
 from utils import render_template, get_object_or_404
 from models import *
+from datetime import timedelta, datetime
 
 def index(request, template):
+	# Display only last 4 weeks worth of messages
+	msg_epoch = datetime.now() - timedelta(weeks=4)
+
 	recipients = Recipient.objects.all()
 	groups = Group.objects.all()
-	messages = Message.objects.order_by('-dt_received')
+	messages = Message.objects.filter(dt_received__gt=msg_epoch).order_by('-dt_received')
 
 	#for group in Group.objects.all():
 	#	for contact in group.contacts.all():
