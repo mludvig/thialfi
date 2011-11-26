@@ -14,9 +14,12 @@ from thialfi import settings
 setup_environ(settings)
 
 ## -- Here comes the script -- ##
+import datetime
 from app.models import *
 
-for message in Message.objects.filter(dt_delivered__isnull = True):
+## Only resend last 2 days of messages
+dt_from=datetime.datetime.now()-datetime.timedelta(days=2)
+for message in Message.objects.filter(dt_delivered__isnull = True, dt_received__gt = dt_from):
 	print "%s | %s | %s" % (message.dt_received, message.recipient.group.contact_primary.sms_number, message.sms_body)
 	if message.delivery_set.all():
 		for delivery in message.delivery_set.all():
