@@ -1,8 +1,16 @@
+import sys
+from thialfi import settings
+
+try:
+	sys.path.append(settings.SMS_CLI_PATH)
+except:
+	pass
+
 from Sms.Config import Config
 from Sms.Sender import SmsSender
 
 ## Create config object
-cfg = Config()
+cfg = Config(settings.SMS_CLI_CONF, settings.SMS_CLI_PROFILE)
 
 def despatch(message, contact):
 	sender = SmsSender()
