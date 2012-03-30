@@ -14,8 +14,8 @@ cfg = Config(settings.SMS_CLI_CONF, settings.SMS_CLI_PROFILE)
 
 def despatch(message, contact):
 	sender = SmsSender()
-	sms_id = sender.send(message.sms_body, [contact.sms_number])
-	return sms_id, get_status(sms_id)
+	sms_ok, sms_ids = sender.send(message.sms_body, [contact.sms_number])
+	return sms_ids[0], get_status(sms_ids[0])
 
 def get_status(sms_id):
 	"""

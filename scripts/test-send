@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+
+## -- Python Setup -- ##
+import os.path
+import sys
+
+PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, PROJECT_ROOT)
+sys.path.insert(0, os.path.join(PROJECT_ROOT, '..'))
+
+## -- Django Setup -- ##
+from django.core.management import setup_environ
+from thialfi import settings
+setup_environ(settings)
+
+## -- Here comes the script -- ##
+import syslog
+import re
+import datetime
+
+from app.models import *
+
+def log(level, message):
+    if not message.endswith("\n"):
+        message += "\n"
+    sys.stderr.write(message)
+    #syslog.syslog(level, message)
+
+def error(message):
+    log(syslog.LOG_ERR, message)
+
+def debug(message):
+    log(syslog.LOG_DEBUG, message)
+
+# Setup SYSLOG
+syslog.openlog(sys.argv[0].split("/")[-1], syslog.LOG_PID, syslog.LOG_MAIL)
+
+# Get the sender and recipient from command line args
+try:
+    sender = sys.argv[1]
+    recipient = sys.argv[2]
+    message = sys.argv[3]
+except IndexError:
+    error("Usage: %s <sender-email> <recipient-email> <message>" % sys.argv[0])
+    sys.exit(1)
+
+
+m = re.match("\s*(.*)@(.*)", recipient)
+if not m:
+    error("Invalid recipient: %r" % recipient)
+    sys.exit(1)
+rcpt_name, domain = m.groups(0)
+rcpt = Recipient.objects.filter(address = rcpt_name)
+if not rcpt:
+    error("Recipient not registered: %s" % recipient)
+    sys.exit(1)
+msg = Message(recipient = rcpt[0])
+msg.hdr_sender = sender
+msg.hdr_recipient = recipient
+msg.hdr_message_id = datetime.datetime.now()
+msg.hdr_subject = "Test message"
+## Format SMS text - this should be configurable (per-sender rules?)
+msg.sms_body = message
+msg.save()
+
+print "Message:    %s" % msg.sms_body
+print "Contact:    %s" % msg.recipient.group.contact_primary
+msg.despatch()
