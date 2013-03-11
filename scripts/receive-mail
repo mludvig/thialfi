@@ -17,6 +17,7 @@ setup_environ(settings)
 import syslog
 import re
 import email
+import base64
 
 from app.models import *
 
@@ -31,6 +32,27 @@ def error(message):
 
 def debug(message):
 	log(syslog.LOG_DEBUG, message)
+
+def find_text_plain(part):
+	# Multipart container
+	if part.is_multipart():
+		for child in part.get_payload():
+			textplain = find_text_plain(child)
+			if textplain:
+				return textplain
+		return ""
+	
+	# Not Multipart, not text/plain
+	if part.get_content_type() != "text/plain":
+		return ""
+	
+	# Here we go .. text/plain
+	payload = part.get_payload()
+	if part.get("content-transfer-encoding") == "base64":
+		return base64.decodestring(payload)
+	if part.get("content-transfer-encoding") == "quoted-printable":
+		return email.quopriMIME.decode(payload)
+	return payload
 
 # Setup SYSLOG
 syslog.openlog(sys.argv[0].split("/")[-1], syslog.LOG_PID, syslog.LOG_MAIL)
@@ -68,8 +90,9 @@ for recipient in recipients:
 	msg.hdr_recipient = recipient
 	msg.hdr_message_id = message_email.get("message-id").strip("<>()")
 	msg.hdr_subject = message_email.get("subject")
+	text_plain_body = find_text_plain(message_email)
 	## Format SMS text - this should be configurable (per-sender rules?)
-	msg.sms_body = str(msg.recipient) + "#" + msg.hdr_subject[:55] + "#" + msg.body[:65].strip()
+	msg.sms_body = str(msg.recipient) + "#" + msg.hdr_subject[:55] + "#" + text_plain_body[:65].strip()
 	msg.save()
 
 	print "Message:    %s" % msg.sms_body
