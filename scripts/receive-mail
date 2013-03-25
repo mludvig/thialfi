@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 ## -- Python Setup -- ##
-import os.path
+import os
 import sys
 
 PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
@@ -74,15 +74,16 @@ print "RCPT TO(%d): %s" % (len(recipients), ",".join(recipients))
 print "Subject:    %s" % message_email.get("subject")
 print "Message-ID: %s" % message_email.get("message-id").strip("<>()")
 
+success = False
 for recipient in recipients:
 	m = re.match("\s*(.*)@(.*)", recipient)
 	if not m:
-		warn("Invalid recipient: %r" % recipient)
+		error("Invalid recipient: %r" % recipient)
 		continue
 	rcpt_name, domain = m.groups(0)
 	rcpt = Recipient.objects.filter(address = rcpt_name)
 	if not rcpt:
-		warn("Recipient not registered: %s" % recipient)
+		error("Recipient not registered: %s" % recipient)
 		continue
 	msg = Message(recipient = rcpt[0])
 	msg.header, msg.body = message_email.as_string().split("\n\n", 1)
@@ -98,3 +99,7 @@ for recipient in recipients:
 	print "Message:    %s" % msg.sms_body
 	print "Contact:    %s" % msg.recipient.group.contact_primary
 	msg.despatch()
+	success = True
+
+if not success:
+	sys.exit(os.EX_UNAVAILABLE)
