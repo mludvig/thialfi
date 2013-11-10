@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 
 from datetime import datetime
 from sms import smsgw
@@ -51,6 +52,7 @@ class Message(models.Model):
     # Timestamps
     dt_received = models.DateTimeField(auto_now = True)
     dt_delivered = models.DateTimeField(blank = True, null = True)
+    dt_acked = models.DateTimeField(blank = True, null = True)
     dt_escalated = models.DateTimeField(blank = True, null = True)
     dt_expired = models.DateTimeField(blank = True, null = True)
 
@@ -117,17 +119,40 @@ class Delivery(models.Model):
         if self.status.startswith("DELIVERED") and not self.message.dt_delivered:
             self.message.dt_delivered = self.dt_status
             self.message.save()
+
+    def get_replies(self, force = False):
+        if force or not self.reply_set.all():
+            # Only run if we have no replies or if force==True
+            rcvd_replies = smsgw.get_replies(self.sms_id)
+            for r_reply in rcvd_replies:
+                try:
+                    if r_reply.mid and self.reply_set.get(reply_id = r_reply.mid):
+                        continue
+                except ObjectDoesNotExist:
+                    reply = self.reply_set.create()
+                    reply.message = r_reply.message
+                    reply.dt_received = r_reply.timestamp
+                    reply.reply_id = r_reply.mid
+                    reply.sender = r_reply.sender
+                    reply.save()
+        if not self.message.dt_acked:
+            for reply in self.reply_set.all():
+                if not self.message.dt_acked or reply.dt_received > self.message.dt_acked:
+                    self.message.dt_acked = reply.dt_received
+                    self.message.save()
+
 __all__.append("Delivery")
 
 class Reply(models.Model):
     delivery = models.ForeignKey(Delivery)
-    origin = models.CharField(max_length=100)
+    sender = models.CharField(max_length=100)
+    reply_id = models.CharField(max_length=100)
     dt_received = models.DateTimeField(auto_now = True)
-    content = models.TextField()
+    message = models.TextField()
 
     class Meta:
         verbose_name_plural = "Replies"
 
     def __unicode__(self):
-        return u"from:%s @%s (%s)" % (self.origin, self.dt_received, self.content)
+        return u"%s [%s] %s" % (self.sender, self.dt_received, self.message)
 __all__.append("Reply")
