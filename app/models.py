@@ -118,3 +118,16 @@ class Delivery(models.Model):
             self.message.dt_delivered = self.dt_status
             self.message.save()
 __all__.append("Delivery")
+
+class Reply(models.Model):
+    delivery = models.ForeignKey(Delivery)
+    origin = models.CharField(max_length=100)
+    dt_received = models.DateTimeField(auto_now = True)
+    content = models.TextField()
+
+    class Meta:
+        verbose_name_plural = "Replies"
+
+    def __unicode__(self):
+        return u"from:%s @%s (%s)" % (self.origin, self.dt_received, self.content)
+__all__.append("Reply")

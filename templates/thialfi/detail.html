@@ -27,5 +27,13 @@
 <tr><td class="label">Status updated:</td><td>{{ delivery.dt_status }}</td></tr>
 <tr><td class="label">SMS ID:</td><td>{{ delivery.sms_id }}</td></tr>
 </table>
+<h3 class="table-header">Replies</h3>
+{% for reply in delivery.reply_set.all %}
+<table class="message-detail">
+<tr><td class="label">Content:</td><td>{{ reply.content }}</td></tr>
+<tr><td class="label">Received:</td><td>{{ reply.dt_received }}</td></tr>
+<tr><td class="label">Origin:</td><td>{{ reply.origin }}</td></tr>
+</table>
+{% endfor %}
 {% endfor %}
 {% endblock %}
