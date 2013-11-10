@@ -8,22 +8,19 @@ except:
 
 from Sms.Config import Config
 from Sms.Sender import SmsSender
+from Sms.SimpleObjects import SmsMessage
 
 ## Create config object
-cfg = Config(settings.SMS_CLI_CONF, settings.SMS_CLI_PROFILE)
+cfg = Config(open(settings.SMS_CLI_CONF), settings.SMS_CLI_PROFILE)
 
 def despatch(message, contact):
-	sender = SmsSender()
-	sms_ok, sms_ids = sender.send(message.sms_body, [contact.sms_number])
-	return sms_ids[0], get_status(sms_ids[0])
+    sender = SmsSender()
+    smsmessage = SmsMessage(message = message, recipients = [contact.sms_number])
+    return sender.send(smsmessage)[0]
 
 def get_status(sms_id):
 	"""
 	get_status(sms_id) -> returns Sms.Sender.SmsStatus() object
 	"""
 	sender = SmsSender()
-	try:
-		status = sender.get_status(sms_id)
-	except AttributeError, e:
-		return "UNKNOWN"
-	return status
+	return sender.get_status(mids = [sms_id], keep = True)[0]

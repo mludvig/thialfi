@@ -69,12 +69,11 @@ class Message(models.Model):
 			## No delivery attempted yet 
 			## - despatch now
 			delivery = Delivery(message = self, contact = self.recipient.group.contact_primary)
-			sms_id, status = smsgw.despatch(self, delivery.contact)
-			print "(%s, %s, %s)" % (delivery.contact.sms_number, sms_id, status.code)
-			if sms_id:
-				delivery.sms_id = sms_id
-				delivery.status = str(status)
-				delivery.dt_despatched = datetime.now()
+			status = smsgw.despatch(self, delivery.contact)
+			if status.despatched:
+				delivery.sms_id = status.mid
+				delivery.status = status.status
+				delivery.dt_despatched = status.timestamp
 				delivery.save()
 
 	def update_status(self):
@@ -100,16 +99,18 @@ class Delivery(models.Model):
 
 	class Meta:
 		verbose_name_plural = "Deliveries"
-	
+
 	def __unicode__(self):
 		return u"to:%s @%s (%s)" % (self.contact, self.dt_despatched, self.status.split(" ")[0])
 
 	def update_status(self):
 		if not self.status.startswith("DELIVERED"):
 			status = smsgw.get_status(self.sms_id)
-			if str(status) != self.status:
-				self.status = str(status)
-				self.dt_status = datetime.now()
+			if not status:
+				return
+			if status.status != self.status:
+				self.status = status.status
+				self.dt_status = status.timestamp
 				self.save()
 		if self.status.startswith("DELIVERED") and not self.message.dt_delivered:
 			self.message.dt_delivered = self.dt_status
