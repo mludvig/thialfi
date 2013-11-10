@@ -10,14 +10,14 @@ sys.path.insert(0, os.path.join(PROJECT_ROOT, '..'))
 
 ### Figure out media revision to avoid caching problems
 #try:
-#	print "MEDIA_REV=%s (cached)" % MEDIA_REV
+#    print "MEDIA_REV=%s (cached)" % MEDIA_REV
 #except:
-#	try:
-#		MEDIA_REV = os.popen("/usr/bin/hg identify -i").readline().strip()
-#	except:
-#		import datetime
-#		MEDIA_REV = datetime.datetime.now().strftime("%s")
-#	print "MEDIA_REV=%s" % MEDIA_REV
+#    try:
+#        MEDIA_REV = os.popen("/usr/bin/hg identify -i").readline().strip()
+#    except:
+#        import datetime
+#        MEDIA_REV = datetime.datetime.now().strftime("%s")
+#    print "MEDIA_REV=%s" % MEDIA_REV
 MEDIA_REV="fixme"
 
 DEBUG = True
@@ -97,15 +97,15 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-	PROJECT_ROOT+'/templates',
+    PROJECT_ROOT+'/templates',
 )
 
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-	'django.contrib.admin',
-	'app',
+    'django.contrib.admin',
+    'app',
 )
 
 from settings_local import *

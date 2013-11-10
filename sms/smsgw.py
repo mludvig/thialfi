@@ -2,9 +2,9 @@ import sys
 from thialfi import settings
 
 try:
-	sys.path.append(settings.SMS_CLI_PATH)
+    sys.path.append(settings.SMS_CLI_PATH)
 except:
-	pass
+    pass
 
 from Sms.Config import Config
 from Sms.Sender import SmsSender
@@ -19,8 +19,5 @@ def despatch(message, contact):
     return sender.send(smsmessage)[0]
 
 def get_status(sms_id):
-	"""
-	get_status(sms_id) -> returns Sms.Sender.SmsStatus() object
-	"""
-	sender = SmsSender()
-	return sender.get_status(mids = [sms_id], keep = True)[0]
+    sender = SmsSender()
+    return sender.get_status(mids = [sms_id], keep = True)[0]
