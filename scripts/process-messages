@@ -17,22 +17,28 @@ setup_environ(settings)
 import datetime
 from app.models import *
 
-## Only resend last 2 days of messages
-dt_from=datetime.datetime.now()-datetime.timedelta(days=2)
+## Only resend last 1 day of messages
+dt_from=datetime.datetime.now()-datetime.timedelta(days=1)
 for message in Message.objects.filter(dt_received__gt = dt_from):
     if message.dt_acked:
         continue
     print "%s | %s | %s" % (message.dt_received, message.recipient.group.contact_primary.sms_number, message.sms_body)
-    if message.delivery_set.all():
-        for delivery in message.delivery_set.all():
-            if not message.dt_delivered:
-                delivery.update_status()
-                print " * %s->%s : %s" % (delivery.dt_despatched, delivery.contact.sms_number, delivery.status)
-            if not message.dt_acked:
-                delivery.get_replies()
-                for reply in delivery.reply_set.all():
-                    print " < %s [%s] %s" % (reply.sender, reply.dt_received, reply.message)
-        # TODO: If message not ACK'ed for too long -> escalate
-    else:
+
+    # If it hasn't yet been despatched do it now
+    if not message.delivery_set.all():
         print " * Despatching message"
         message.despatch()
+        continue
+
+    # Update delivery statuses, fetch replies
+    for delivery in message.delivery_set.all():
+        if not message.dt_delivered:
+            delivery.update_status()
+            print " * %s->%s : %s" % (delivery.dt_despatched, delivery.contact.sms_number, delivery.status)
+        if not message.dt_acked:
+            delivery.get_replies()
+            for reply in delivery.reply_set.all():
+                print " < %s [%s] %s" % (reply.sender, reply.dt_received, reply.message)
+
+    # See if it needs to be escalated
+    message.perform_escalation()

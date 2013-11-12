@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 
-from datetime import datetime
+import datetime
 from sms import smsgw
 
 __all__ = []
@@ -19,7 +19,7 @@ class Group(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank = True)
     contacts = models.ManyToManyField(Contact)
-    contact_primary = models.ForeignKey(Contact, related_name = "contact_primary")
+    contact_primary = models.ForeignKey(Contact, related_name = "contact_primary", help_text = "On-call contact")
 
     def __unicode__(self):
         return unicode(self.name)
@@ -29,6 +29,8 @@ class Recipient(models.Model):
     address = models.CharField(max_length=500)
     description = models.TextField(blank = True)
     group = models.ForeignKey(Group)
+    require_ack_min = models.IntegerField(default = 0, help_text = "Require ACK withing X minutes. 0 means ACK not required.")
+    escalation_group = models.ForeignKey(Group, related_name = "escalation_group", null = True, blank = True, help_text = "Non-ACKed messages will be escalated to this group's primary contact.")
 
     def __unicode__(self):
         return unicode(self.address)
@@ -50,9 +52,10 @@ class Message(models.Model):
     # Resolved recipient
     recipient = models.ForeignKey(Recipient)
     # Timestamps
-    dt_received = models.DateTimeField(auto_now = True)
+    dt_received = models.DateTimeField(auto_now_add = True)
     dt_delivered = models.DateTimeField(blank = True, null = True)
     dt_acked = models.DateTimeField(blank = True, null = True)
+    dt_called = models.DateTimeField(blank = True, null = True)
     dt_escalated = models.DateTimeField(blank = True, null = True)
     dt_expired = models.DateTimeField(blank = True, null = True)
 
@@ -91,13 +94,60 @@ class Message(models.Model):
         except IndexError:
             return "unknown"
 
+    def older_than(self, timestamp, minutes):
+        return bool(timestamp) and timestamp + datetime.timedelta(minutes = minutes) < datetime.datetime.now()
+
+    def is_overdue(self):
+        return self.process_escalation(dry_run = True)
+
+    def perform_escalation(self, dry_run = False):
+        if self.dt_acked or not self.recipient.require_ack_min:
+            # ACKed or ACK not required -> nothing to do
+            return False
+
+        # We need ACK - is it due yet?
+        if not self.older_than(self.dt_received, self.recipient.require_ack_min):
+            # Received less than ACK-mins ago -> nothing to do
+            return False
+
+        print "dt_received=%s, dt_called=%s, dt_escalated=%s, now=%s" % (self.dt_received, self.dt_called, self.dt_escalated, datetime.datetime.now())
+        # ACK overdue
+        if not self.dt_called:
+            # Not yet called -> call now
+            if not dry_run:
+                self.make_call(self.recipient.group)
+                self.dt_called = datetime.datetime.now()
+                self.save()
+            return True
+
+        # Already called -> are we in CALL_GRACE period?
+        if not self.older_than(self.dt_called, settings.CALL_GRACE_MIN):
+            # Yes we are, called less than CALL_GRACE_MIN ago -> nothing to do
+            return False
+
+        # Call to Primary Contact not ACKed in time
+        if not self.dt_escalated:
+            # Not yet escalated -> escalate now
+            if not dry_run:
+                self.make_call(self.recipient.escalation_group)
+                self.dt_escalated = datetime.datetime.now()
+                self.save()
+            return True
+
+        # Escalated more than CALL_GRACE_MIN mins ago and not ACKed? -> Now what???
+        #if self.older_than(self.dt_escalated, settings.CALL_GRACE_MIN):
+        #    # TODO: Now What??
+        return True
+
+    def make_call(self, group):
+        print("Calling '%s' [%s]" % (group, group.contact_primary))
 __all__.append("Message")
 
 class Delivery(models.Model):
     message = models.ForeignKey(Message)
     contact = models.ForeignKey(Contact)
     sms_id = models.CharField(max_length=100)
-    dt_despatched = models.DateTimeField(auto_now = True)
+    dt_despatched = models.DateTimeField(auto_now_add = True)
     dt_status = models.DateTimeField(blank = True, null = True)
     status = models.CharField(max_length=100)
 
@@ -147,7 +197,7 @@ class Reply(models.Model):
     delivery = models.ForeignKey(Delivery)
     sender = models.CharField(max_length=100)
     reply_id = models.CharField(max_length=100)
-    dt_received = models.DateTimeField(auto_now = True)
+    dt_received = models.DateTimeField(auto_now_add = True)
     message = models.TextField()
 
     class Meta:
@@ -156,3 +206,16 @@ class Reply(models.Model):
     def __unicode__(self):
         return u"%s [%s] %s" % (self.sender, self.dt_received, self.message)
 __all__.append("Reply")
+
+class PhoneCall(models.Model):
+    message = models.ForeignKey(Message)
+    contact = models.ForeignKey(Contact)
+    message_url = models.CharField(max_length = 500)
+    number_called = models.CharField(max_length = 200)
+    call_id = models.CharField(max_length = 200)
+    status = models.CharField(max_length = 200)
+    duration = models.IntegerField(null = True)
+    dt_queued = models.DateTimeField(auto_now_add = True)
+    dt_called = models.DateTimeField(blank = True, null = True)
+    dt_answered = models.DateTimeField(blank = True, null = True)
+    dt_acked = models.DateTimeField(blank = True, null = True)
