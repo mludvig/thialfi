@@ -14,6 +14,7 @@ from thialfi import settings
 setup_environ(settings)
 
 ## -- Here comes the script -- ##
+from thialfi.logger import *
 import datetime
 from app.models import *
 
@@ -22,11 +23,13 @@ dt_from=datetime.datetime.now()-datetime.timedelta(days=1)
 for message in Message.objects.filter(dt_received__gt = dt_from):
     if message.dt_acked:
         continue
-    print "%s | %s | %s" % (message.dt_received, message.recipient.group.contact_primary.sms_number, message.sms_body)
+
+    if not message.dt_delivered:
+        info("Undelivered message: %s [%s] %s" % (message.dt_received, message.recipient.group.contact_primary.sms_number, message.sms_body))
 
     # If it hasn't yet been despatched do it now
     if not message.delivery_set.all():
-        print " * Despatching message"
+        info(" * Despatching message to [%s]" % (message.recipient.group.contact_primary.sms_number))
         message.despatch()
         continue
 
@@ -34,11 +37,11 @@ for message in Message.objects.filter(dt_received__gt = dt_from):
     for delivery in message.delivery_set.all():
         if not message.dt_delivered:
             delivery.update_status()
-            print " * %s->%s : %s" % (delivery.dt_despatched, delivery.contact.sms_number, delivery.status)
+            info("Updated status: %s->%s : %s" % (delivery.dt_despatched, delivery.contact.sms_number, delivery.status))
         if not message.dt_acked:
             delivery.get_replies()
             for reply in delivery.reply_set.all():
-                print " < %s [%s] %s" % (reply.sender, reply.dt_received, reply.message)
+                info("Received reply: %s [%s] %s" % (reply.sender, reply.dt_received, reply.message))
 
     # See if it needs to be escalated
     message.perform_escalation()

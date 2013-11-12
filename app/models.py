@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 
+from thialfi.logger import *
 import datetime
 from sms import smsgw
 
@@ -75,8 +76,6 @@ class Message(models.Model):
             ## - despatch now
             delivery = Delivery(message = self, contact = self.recipient.group.contact_primary)
             status = smsgw.despatch(self, delivery.contact)
-            print status
-            print "despatch(%s): despatched=%s, mid=%s" % (delivery.contact.sms_number, status.despatched, status.mid)
             if status.despatched:
                 delivery.sms_id = status.mid
                 delivery.status = status.status
@@ -101,6 +100,7 @@ class Message(models.Model):
         return self.process_escalation(dry_run = True)
 
     def perform_escalation(self, dry_run = False):
+        info("Performing escalation...")
         if self.dt_acked or not self.recipient.require_ack_min:
             # ACKed or ACK not required -> nothing to do
             return False
@@ -110,7 +110,6 @@ class Message(models.Model):
             # Received less than ACK-mins ago -> nothing to do
             return False
 
-        print "dt_received=%s, dt_called=%s, dt_escalated=%s, now=%s" % (self.dt_received, self.dt_called, self.dt_escalated, datetime.datetime.now())
         # ACK overdue
         if not self.dt_called:
             # Not yet called -> call now
@@ -140,7 +139,7 @@ class Message(models.Model):
         return True
 
     def make_call(self, group):
-        print("Calling '%s' [%s]" % (group, group.contact_primary))
+        info("Calling '%s' [%s]" % (group, group.contact_primary))
 __all__.append("Message")
 
 class Delivery(models.Model):
