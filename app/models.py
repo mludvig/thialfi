@@ -7,15 +7,17 @@ import datetime
 from sms import smsgw
 
 __all__ = []
+
 # Recipient-related models
+__all__.append("Contact")
 class Contact(models.Model):
     name = models.CharField(max_length=200)
     sms_number = models.CharField(max_length=200)
 
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.sms_number)
-__all__.append("Contact")
 
+__all__.append("Group")
 class Group(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank = True)
@@ -24,8 +26,8 @@ class Group(models.Model):
 
     def __unicode__(self):
         return unicode(self.name)
-__all__.append("Group")
 
+__all__.append("Recipient")
 class Recipient(models.Model):
     address = models.CharField(max_length=500)
     description = models.TextField(blank = True)
@@ -37,9 +39,9 @@ class Recipient(models.Model):
         return unicode(self.address)
     def domain(self):
         return settings.RCPT_DOMAIN
-__all__.append("Recipient")
 
 # Message-related models
+__all__.append("Message")
 class Message(models.Model):
     header = models.TextField()
     body = models.TextField()
@@ -140,8 +142,8 @@ class Message(models.Model):
 
     def make_call(self, group):
         info("Calling '%s' [%s]" % (group, group.contact_primary))
-__all__.append("Message")
 
+__all__.append("Delivery")
 class Delivery(models.Model):
     message = models.ForeignKey(Message)
     contact = models.ForeignKey(Contact)
@@ -190,8 +192,7 @@ class Delivery(models.Model):
                     self.message.dt_acked = reply.dt_received
                     self.message.save()
 
-__all__.append("Delivery")
-
+__all__.append("Reply")
 class Reply(models.Model):
     delivery = models.ForeignKey(Delivery)
     sender = models.CharField(max_length=100)
@@ -204,7 +205,6 @@ class Reply(models.Model):
 
     def __unicode__(self):
         return u"%s [%s] %s" % (self.sender, self.dt_received, self.message)
-__all__.append("Reply")
 
 class PhoneCall(models.Model):
     message = models.ForeignKey(Message)
