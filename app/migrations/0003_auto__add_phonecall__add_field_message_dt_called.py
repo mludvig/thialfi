@@ -8,23 +8,6 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'PhoneCall'
-        db.create_table('app_phonecall', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('message', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['app.Message'])),
-            ('contact', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['app.Contact'])),
-            ('message_url', self.gf('django.db.models.fields.CharField')(max_length=500)),
-            ('number_called', self.gf('django.db.models.fields.CharField')(max_length=200)),
-            ('call_id', self.gf('django.db.models.fields.CharField')(max_length=200)),
-            ('status', self.gf('django.db.models.fields.CharField')(max_length=200)),
-            ('duration', self.gf('django.db.models.fields.IntegerField')(null=True)),
-            ('dt_queued', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('dt_called', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('dt_answered', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('dt_acked', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-        ))
-        db.send_create_signal('app', ['PhoneCall'])
-
         # Adding field 'Message.dt_called'
         db.add_column('app_message', 'dt_called',
                       self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True),
@@ -32,9 +15,6 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        # Deleting model 'PhoneCall'
-        db.delete_table('app_phonecall')
-
         # Deleting field 'Message.dt_called'
         db.delete_column('app_message', 'dt_called')
 
@@ -81,21 +61,6 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'recipient': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['app.Recipient']"}),
             'sms_body': ('django.db.models.fields.TextField', [], {})
-        },
-        'app.phonecall': {
-            'Meta': {'object_name': 'PhoneCall'},
-            'call_id': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'contact': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['app.Contact']"}),
-            'dt_acked': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'dt_answered': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'dt_called': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'dt_queued': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'duration': ('django.db.models.fields.IntegerField', [], {'null': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'message': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['app.Message']"}),
-            'message_url': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
-            'number_called': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'status': ('django.db.models.fields.CharField', [], {'max_length': '200'})
         },
         'app.recipient': {
             'Meta': {'object_name': 'Recipient'},

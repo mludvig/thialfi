@@ -9,9 +9,6 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
 
-        # Changing field 'PhoneCall.dt_queued'
-        db.alter_column('app_phonecall', 'dt_queued', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True))
-
         # Changing field 'Message.dt_received'
         db.alter_column('app_message', 'dt_received', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True))
 
@@ -22,9 +19,6 @@ class Migration(SchemaMigration):
         db.alter_column('app_reply', 'dt_received', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True))
 
     def backwards(self, orm):
-
-        # Changing field 'PhoneCall.dt_queued'
-        db.alter_column('app_phonecall', 'dt_queued', self.gf('django.db.models.fields.DateTimeField')(auto_now=True))
 
         # Changing field 'Message.dt_received'
         db.alter_column('app_message', 'dt_received', self.gf('django.db.models.fields.DateTimeField')(auto_now=True))
@@ -77,21 +71,6 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'recipient': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['app.Recipient']"}),
             'sms_body': ('django.db.models.fields.TextField', [], {})
-        },
-        'app.phonecall': {
-            'Meta': {'object_name': 'PhoneCall'},
-            'call_id': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'contact': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['app.Contact']"}),
-            'dt_acked': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'dt_answered': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'dt_called': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'dt_queued': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'duration': ('django.db.models.fields.IntegerField', [], {'null': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'message': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['app.Message']"}),
-            'message_url': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
-            'number_called': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'status': ('django.db.models.fields.CharField', [], {'max_length': '200'})
         },
         'app.recipient': {
             'Meta': {'object_name': 'Recipient'},
