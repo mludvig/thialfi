@@ -28,3 +28,22 @@ def detail(request, template, message_id):
     return render_template(request, template, {
         "message" : message
     })
+
+def twilio(request, template, phonecall_id):
+    phonecall = get_object_or_404(PhoneCall, pk=phonecall_id)
+    text_to_say = phonecall.text_to_say
+    acked = False
+    if request.GET.get("Digits") == "1":
+        acked = True
+        text_to_say = "Call acknowledged. Thank You."
+        if request.GET.get('CallSid') != phonecall.call_id:
+            error("Received SID != stored SID: '%s' != '%s'" % (request.GET.get('CallSid'), phonecall.call_id))
+        else:
+            phonecall.status = request.GET.get('CallStatus')
+            phonecall.dt_acked = datetime.now()
+            phonecall.message.acknowledge()
+            phonecall.save()
+    return render_template(request, template, {
+        "text_to_say" : text_to_say,
+        "say_press_1" : not acked,
+    })

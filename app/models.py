@@ -1,10 +1,13 @@
 from django.conf import settings
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.urlresolvers import reverse
 
 from thialfi.logger import *
+from thialfi.voice import twiliogw
 import datetime
 from sms import smsgw
+from random_primary import RandomPrimaryIdModel
 
 __all__ = []
 
@@ -65,6 +68,12 @@ class Message(models.Model):
     def __unicode__(self):
         return self.sms_body
 
+    def acknowledge(self, dt_acked = None):
+        if dt_acked is None:
+            dt_acked = datetime.datetime.now()
+        self.dt_acked = dt_acked
+        self.save()
+
     def despatch(self):
         if self.dt_delivered or self.dt_expired:
             return
@@ -104,44 +113,56 @@ class Message(models.Model):
     def perform_escalation(self, dry_run = False):
         info("Performing escalation...")
         if self.dt_acked or not self.recipient.require_ack_min:
-            # ACKed or ACK not required -> nothing to do
+            debug("ACKed or ACK not required -> nothing to do")
             return False
 
-        # We need ACK - is it due yet?
+        debug("We need ACK - is it due yet?")
         if not self.older_than(self.dt_received, self.recipient.require_ack_min):
-            # Received less than ACK-mins ago -> nothing to do
+            debug("Received less than ACK-mins ago -> nothing to do")
             return False
 
-        # ACK overdue
+        debug("ACK overdue")
         if not self.dt_called:
-            # Not yet called -> call now
+            debug("Not yet called -> call now")
             if not dry_run:
-                self.make_call(self.recipient.group)
-                self.dt_called = datetime.datetime.now()
-                self.save()
+                self.call_group()
             return True
 
-        # Already called -> are we in CALL_GRACE period?
+        debug("Already called -> are we in CALL_GRACE period?")
         if not self.older_than(self.dt_called, settings.CALL_GRACE_MIN):
-            # Yes we are, called less than CALL_GRACE_MIN ago -> nothing to do
+            debug("Yes we are, called less than CALL_GRACE_MIN ago -> nothing to do")
             return False
 
-        # Call to Primary Contact not ACKed in time
+        debug("Call to Primary Contact not ACKed in time")
         if not self.dt_escalated:
-            # Not yet escalated -> escalate now
+            debug("Not yet escalated -> escalate now")
             if not dry_run:
-                self.make_call(self.recipient.escalation_group)
-                self.dt_escalated = datetime.datetime.now()
-                self.save()
+                self.call_escalation_group()
             return True
 
-        # Escalated more than CALL_GRACE_MIN mins ago and not ACKed? -> Now what???
-        #if self.older_than(self.dt_escalated, settings.CALL_GRACE_MIN):
-        #    # TODO: Now What??
+        if self.older_than(self.dt_escalated, settings.CALL_GRACE_MIN):
+            error("Escalated more than CALL_GRACE_MIN mins ago and not ACKed? -> Try again!")
+            if not dry_run:
+                self.call_group()
+                self.call_escalation_group()
+
         return True
 
-    def make_call(self, group):
+    def call_group(self):
+        self.make_call(self.recipient.group, "Alert for recipient %s. Group %s" % (self.recipient, self.recipient.group))
+        self.dt_called = datetime.datetime.now()
+        self.save()
+
+    def call_escalation_group(self):
+        self.make_call(self.recipient.escalation_group, "Escalating alert for group %s" % self.recipient.group.name)
+        self.dt_escalated = datetime.datetime.now()
+        self.save()
+
+    def make_call(self, group, text_to_say):
         info("Calling '%s' [%s]" % (group, group.contact_primary))
+        pc = PhoneCall(message = self, contact = group.contact_primary, text_to_say = text_to_say)
+        pc.save()
+        pc.call()
 
 __all__.append("Delivery")
 class Delivery(models.Model):
@@ -206,15 +227,34 @@ class Reply(models.Model):
     def __unicode__(self):
         return u"%s [%s] %s" % (self.sender, self.dt_received, self.message)
 
-class PhoneCall(models.Model):
+__all__.append("PhoneCall")
+class PhoneCall(RandomPrimaryIdModel):
     message = models.ForeignKey(Message)
     contact = models.ForeignKey(Contact)
-    message_url = models.CharField(max_length = 500)
     number_called = models.CharField(max_length = 200)
-    call_id = models.CharField(max_length = 200)
-    status = models.CharField(max_length = 200)
+    call_id = models.CharField(max_length = 200, null = True)
+    status = models.CharField(max_length = 200, null = True)
+    text_to_say = models.CharField(max_length = 500, null = True)
+    numbers_gathered = models.CharField(max_length = 50, null = True)
     duration = models.IntegerField(null = True)
     dt_queued = models.DateTimeField(auto_now_add = True)
     dt_called = models.DateTimeField(blank = True, null = True)
     dt_answered = models.DateTimeField(blank = True, null = True)
     dt_acked = models.DateTimeField(blank = True, null = True)
+
+    class Meta:
+        pass
+
+    def __unicode__(self):
+        return u"%s:%s@%s" % (self.status, self.number_called, self.dt_queued)
+
+    def call(self):
+        if not self.number_called:
+            self.number_called = self.contact.sms_number
+        voice_url = "http://%s%s" % (settings.RCPT_DOMAIN, reverse('app.views.twilio', kwargs={ 'phonecall_id' : self.id }))
+        debug("voice_url=%s" % voice_url)
+        c = twiliogw.make_call(self.number_called, voice_url)
+        self.status = c.status
+        self.call_id = c.sid
+        self.number_called = c.to
+        self.save()
