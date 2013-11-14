@@ -2,6 +2,8 @@ from django.conf import settings
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
+from django.core.validators import RegexValidator
+from django.contrib import admin
 
 from thialfi.logger import *
 from thialfi.voice import twiliogw
@@ -11,7 +13,8 @@ from random_primary import RandomPrimaryIdModel
 
 __all__ = []
 
-# Recipient-related models
+### Contact model
+
 __all__.append("Contact")
 class Contact(models.Model):
     name = models.CharField(max_length=200)
@@ -19,6 +22,10 @@ class Contact(models.Model):
 
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.sms_number)
+
+admin.site.register(Contact)
+
+### Group model
 
 __all__.append("Group")
 class Group(models.Model):
@@ -30,9 +37,16 @@ class Group(models.Model):
     def __unicode__(self):
         return unicode(self.name)
 
+class GroupAdmin(admin.ModelAdmin):
+    list_display = ('name', 'contact_primary')
+
+admin.site.register(Group, GroupAdmin)
+
+### Recipient model
+
 __all__.append("Recipient")
 class Recipient(models.Model):
-    address = models.CharField(max_length=500)
+    address = models.CharField(max_length=500, help_text = 'Use only lowercase letters, digits and hyphens', validators = [ RegexValidator(r'^[a-z][a-z0-9-]+$', 'Use only lowercase letters, digits and hyphens') ])
     description = models.TextField(blank = True)
     group = models.ForeignKey(Group)
     require_ack_min = models.IntegerField(default = 0, help_text = "Require ACK withing X minutes. 0 means ACK not required.")
@@ -40,10 +54,17 @@ class Recipient(models.Model):
 
     def __unicode__(self):
         return unicode(self.address)
+
     def domain(self):
         return settings.RCPT_DOMAIN
 
-# Message-related models
+class RecipientAdmin(admin.ModelAdmin):
+    list_display = ('address', 'group', 'escalation_group')
+
+admin.site.register(Recipient, RecipientAdmin)
+
+### Message model
+
 __all__.append("Message")
 class Message(models.Model):
     header = models.TextField()
@@ -164,6 +185,14 @@ class Message(models.Model):
         pc.save()
         pc.call()
 
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ('sms_body', 'recipient', 'dt_received', 'dt_acked')
+    list_filter = ('recipient', 'dt_received')
+
+admin.site.register(Message, MessageAdmin)
+
+### Delivery model
+
 __all__.append("Delivery")
 class Delivery(models.Model):
     message = models.ForeignKey(Message)
@@ -213,6 +242,10 @@ class Delivery(models.Model):
                     self.message.dt_acked = reply.dt_received
                     self.message.save()
 
+admin.site.register(Delivery)
+
+### Reply model
+
 __all__.append("Reply")
 class Reply(models.Model):
     delivery = models.ForeignKey(Delivery)
@@ -226,6 +259,18 @@ class Reply(models.Model):
 
     def __unicode__(self):
         return u"%s [%s] %s" % (self.sender, self.dt_received, self.message)
+
+class ReplyAdmin(admin.ModelAdmin):
+    list_display = ('dt_received', 'message', 'sender', 'delivery_message')
+    list_filter = ('dt_received',)
+
+    def delivery_message(self, object):
+        return "%s" % (object.delivery.message)
+    delivery_message.short_description = "Alert Message"
+
+admin.site.register(Reply, ReplyAdmin)
+
+### PhoneCall model
 
 __all__.append("PhoneCall")
 class PhoneCall(RandomPrimaryIdModel):
@@ -243,7 +288,8 @@ class PhoneCall(RandomPrimaryIdModel):
     dt_acked = models.DateTimeField(blank = True, null = True)
 
     class Meta:
-        pass
+        abstract = False
+        ordering = ('-dt_queued',)
 
     def __unicode__(self):
         return u"%s:%s@%s" % (self.status, self.number_called, self.dt_queued)
@@ -258,3 +304,9 @@ class PhoneCall(RandomPrimaryIdModel):
         self.call_id = c.sid
         self.number_called = c.to
         self.save()
+
+class PhoneCallAdmin(admin.ModelAdmin):
+    list_display = ('dt_queued', 'status', 'message', 'contact')
+    list_filter = ('status', 'contact')
+
+admin.site.register(PhoneCall, PhoneCallAdmin)
