@@ -20,18 +20,7 @@ import email
 import base64
 
 from app.models import *
-
-def log(level, message):
-    if not message.endswith("\n"):
-        message += "\n"
-    sys.stderr.write(message)
-    syslog.syslog(level, message)
-
-def error(message):
-    log(syslog.LOG_ERR, message)
-
-def debug(message):
-    log(syslog.LOG_DEBUG, message)
+from thialfi.logger import *
 
 def find_text_plain(part):
     # Multipart container
@@ -54,9 +43,6 @@ def find_text_plain(part):
         return email.quopriMIME.decode(payload)
     return payload
 
-# Setup SYSLOG
-syslog.openlog(sys.argv[0].split("/")[-1], syslog.LOG_PID, syslog.LOG_MAIL)
-
 # Get the sender and recipient from command line args
 try:
     sender = sys.argv[1]
@@ -68,11 +54,11 @@ except IndexError:
 # Read in the message
 message_email = email.message_from_file(sys.stdin)
 
-print "MAIL FROM:  %s" % sender
-print "RCPT TO(%d): %s" % (len(recipients), ",".join(recipients))
+info("MAIL FROM: %s" % sender)
+info("RCPT TO(%d): %s" % (len(recipients), ",".join(recipients)))
 
-print "Subject:    %s" % message_email.get("subject")
-print "Message-ID: %s" % message_email.get("message-id").strip("<>()")
+info("Subject: %s" % message_email.get("subject"))
+info("Message-ID: %s" % message_email.get("message-id").strip("<>()"))
 
 success = False
 for recipient in recipients:
@@ -96,8 +82,8 @@ for recipient in recipients:
     msg.sms_body = str(msg.recipient) + "#" + msg.hdr_subject[:55] + "#" + text_plain_body[:65].strip()
     msg.save()
 
-    print "Message:    %s" % msg.sms_body
-    print "Contact:    %s" % msg.recipient.group.contact_primary
+    info("Message: %s" % msg.sms_body)
+    info("Contact: %s" % msg.recipient.group.contact_primary)
     msg.despatch()
     success = True
 

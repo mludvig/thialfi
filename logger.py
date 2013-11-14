@@ -37,12 +37,11 @@ def error(*args, **kwargs):
 thialfi_logger = logging.getLogger('thialfi')
 thialfi_logger.setLevel(logging.DEBUG)
 thialfi_logger.findCaller = findCaller
-if not sys.stdout.isatty():
-    syslog_handler = logging.handlers.SysLogHandler(facility=logging.handlers.SysLogHandler.LOG_USER, address='/dev/log')
-    syslog_formatter = logging.Formatter('%(name)s: %(levelname)s: %(message)s')
-    syslog_handler.setFormatter(syslog_formatter)
-    thialfi_logger.addHandler(syslog_handler)
-else:
+syslog_handler = logging.handlers.SysLogHandler(facility=logging.handlers.SysLogHandler.LOG_USER, address='/dev/log')
+syslog_formatter = logging.Formatter('%(name)s: %(levelname)s: %(message)s')
+syslog_handler.setFormatter(syslog_formatter)
+thialfi_logger.addHandler(syslog_handler)
+if sys.stderr.isatty():
     stderr_handler = logging.StreamHandler()
     stderr_formatter = logging.Formatter('[%(pathname)s:%(lineno)d] %(levelname)s: %(message)s')
     stderr_handler.setFormatter(stderr_formatter)
