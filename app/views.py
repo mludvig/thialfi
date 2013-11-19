@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from utils import render_template, get_object_or_404
 from models import *
 from datetime import timedelta, datetime
+from thialfi.logger import *
 
 def index(request, template):
     # Display only last 4 weeks worth of messages
@@ -30,6 +31,8 @@ def detail(request, template, message_id):
     })
 
 def twilio(request, template, phonecall_id):
+    debug("twilio request for PhoneCall=%s" % phonecall_id)
+    debug("GET: %r" % request.GET)
     phonecall = get_object_or_404(PhoneCall, pk=phonecall_id)
     text_to_say = phonecall.text_to_say
     acked = False

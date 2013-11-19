@@ -24,12 +24,11 @@ for message in Message.objects.filter(dt_received__gt = dt_from):
     if message.dt_acked:
         continue
 
-    if not message.dt_delivered:
-        info("Undelivered message: %s [%s] %s" % (message.dt_received, message.recipient.group.contact_primary.sms_number, message.sms_body))
+    info("{%d} Processing unACKed message: received=(%s) [%s] %s" % (message.id, message.dt_received, message.recipient.group.contact_primary.sms_number, message.sms_body))
 
     # If it hasn't yet been despatched do it now
     if not message.delivery_set.all():
-        info(" * Despatching message to [%s]" % (message.recipient.group.contact_primary.sms_number))
+        info("{%d} Despatching message to [%s]" % (message.id, message.recipient.group.contact_primary.sms_number))
         message.despatch()
         continue
 
@@ -37,11 +36,14 @@ for message in Message.objects.filter(dt_received__gt = dt_from):
     for delivery in message.delivery_set.all():
         if not message.dt_delivered:
             delivery.update_status()
-            info("Updated status: %s->%s : %s" % (delivery.dt_despatched, delivery.contact.sms_number, delivery.status))
+            info("{%d} Updated delivery {%d} status: %s->%s : %s" % (message.id, delivery.id, delivery.dt_despatched, delivery.contact.sms_number, delivery.status))
         if not message.dt_acked:
             delivery.get_replies()
             for reply in delivery.reply_set.all():
-                info("Received reply: %s [%s] %s" % (reply.sender, reply.dt_received, reply.message))
+                info("{%d} Received reply: %s [%s] %s" % (message.id, reply.sender, reply.dt_received, reply.message))
+
+    if message.dt_acked:
+        continue
 
     # See if it needs to be escalated
     message.perform_escalation()

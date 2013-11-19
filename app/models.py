@@ -89,10 +89,12 @@ class Message(models.Model):
     def __unicode__(self):
         return self.sms_body
 
-    def acknowledge(self, dt_acked = None):
+    def acknowledge(self, dt_acked = None, ack_by = "<unknown>"):
         if dt_acked is None:
             dt_acked = datetime.datetime.now()
-        self.dt_acked = dt_acked
+        info("{%d} ACK by %s @ %s" % (self.id, ack_by, dt_acked))
+        if not self.dt_acked or dt_acked > self.dt_acked:
+            self.dt_acked = dt_acked
         self.save()
 
     def despatch(self):
@@ -132,7 +134,7 @@ class Message(models.Model):
         return self.process_escalation(dry_run = True)
 
     def perform_escalation(self, dry_run = False):
-        info("Performing escalation...")
+        info("{%d} Performing escalation...", self.id)
         if self.dt_acked or not self.recipient.require_ack_min:
             debug("ACKed or ACK not required -> nothing to do")
             return False
@@ -175,7 +177,7 @@ class Message(models.Model):
         self.save()
 
     def call_escalation_group(self):
-        self.make_call(self.recipient.escalation_group, "Escalating alert for group %s" % self.recipient.group.name)
+        self.make_call(self.recipient.escalation_group, "Escalating alert for group %s. Was unable to contact %s." % (self.recipient.group.name, self.recipient.group.contact_primary.name))
         self.dt_escalated = datetime.datetime.now()
         self.save()
 
@@ -238,9 +240,7 @@ class Delivery(models.Model):
                     reply.save()
         if not self.message.dt_acked:
             for reply in self.reply_set.all():
-                if not self.message.dt_acked or reply.dt_received > self.message.dt_acked:
-                    self.message.dt_acked = reply.dt_received
-                    self.message.save()
+                self.message.acknowledge(reply.dt_received, "Reply %d (%s)" % (reply.id, reply.delivery.contact))
 
 admin.site.register(Delivery)
 
