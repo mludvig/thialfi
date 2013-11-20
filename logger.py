@@ -1,5 +1,6 @@
 import sys, os
 import logging, logging.handlers
+import unicodedata
 
 __all__ = ['debug', 'info', 'warning', 'error']
 
@@ -22,17 +23,20 @@ def findCaller():
         rv = (filename, f.f_lineno, co.co_name)
     return rv
 
-def debug(*args, **kwargs):
-    thialfi_logger.debug(*args, **kwargs)
+def deunicode(msg):
+    return unicodedata.normalize('NFKD', msg).encode('ascii','ignore')
 
-def info(*args, **kwargs):
-    thialfi_logger.info(*args, **kwargs)
+def debug(msg, *args, **kwargs):
+    thialfi_logger.debug(deunicode(msg), *args, **kwargs)
 
-def warning(*args, **kwargs):
-    thialfi_logger.warning(*args, **kwargs)
+def info(msg, *args, **kwargs):
+    thialfi_logger.info(deunicode(msg), *args, **kwargs)
 
-def error(*args, **kwargs):
-    thialfi_logger.error(*args, **kwargs)
+def warning(msg, *args, **kwargs):
+    thialfi_logger.warning(deunicode(msg), *args, **kwargs)
+
+def error(msg, *args, **kwargs):
+    thialfi_logger.error(deunicode(msg), *args, **kwargs)
 
 thialfi_logger = logging.getLogger('thialfi')
 thialfi_logger.setLevel(logging.DEBUG)
