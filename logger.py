@@ -24,7 +24,10 @@ def findCaller():
     return rv
 
 def deunicode(msg):
-    return unicodedata.normalize('NFKD', msg).encode('ascii','ignore')
+    if type(msg) == unicode:
+        return unicodedata.normalize('NFKD', msg).encode('ascii','ignore')
+    else:
+        return str(msg)
 
 def debug(msg, *args, **kwargs):
     thialfi_logger.debug(deunicode(msg), *args, **kwargs)
