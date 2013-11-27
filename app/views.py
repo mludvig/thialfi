@@ -44,7 +44,7 @@ def twilio(request, template, phonecall_id):
         else:
             phonecall.status = request.GET.get('CallStatus')
             phonecall.dt_acked = datetime.now()
-            phonecall.message.acknowledge()
+            phonecall.message.acknowledge(phonecall.dt_acked, "PhoneCall %s (%s)" % (phonecall.id, phonecall.contact))
             phonecall.save()
     return render_template(request, template, {
         "text_to_say" : text_to_say,
