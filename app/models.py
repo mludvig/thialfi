@@ -142,7 +142,7 @@ class Message(models.Model):
                 self.acknowledge(phonecall.dt_acked, "PhoneCall %s (%s)" % (phonecall.id, phonecall.contact))
 
     def perform_escalation(self, dry_run = False):
-        info("{%d} Performing escalation...", self.id)
+        debug("{%d} Performing escalation...", self.id)
         self.sync_acks()
         if self.dt_acked or not self.recipient.require_ack_min:
             debug("ACKed or ACK not required -> nothing to do")
@@ -173,11 +173,11 @@ class Message(models.Model):
             return True
 
         if self.older_than(self.dt_escalated, settings.CALL_GRACE_MIN):
-            error("Escalated more than CALL_GRACE_MIN mins ago and not ACKed? -> Try again!")
+            debug("Escalated more than CALL_GRACE_MIN mins ago and not ACKed? -> Try again!")
             if not dry_run:
                 self.call_group()
                 if not self.recipient.escalation_group or self.recipient.escalation_group.contact_primary.sms_number == self.recipient.group.contact_primary.sms_number:
-                    info("Escalation Group not set or same as Primary Contact")
+                    debug("Escalation Group not set or same as Primary Contact")
                 else:
                     self.call_escalation_group()
 
