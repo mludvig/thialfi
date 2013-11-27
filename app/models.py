@@ -133,8 +133,17 @@ class Message(models.Model):
     def is_overdue(self):
         return self.process_escalation(dry_run = True)
 
+    def sync_acks(self):
+        for delivery in self.delivery_set.all():
+            for reply in delivery.reply_set.all():
+                self.acknowledge(reply.dt_received, "Reply %d (%s)" % (reply.id, reply.delivery.contact))
+        for phonecall in self.phonecall_set.all():
+            if phonecall.dt_acked:
+                self.acknowledge(phonecall.dt_acked, "PhoneCall %s (%s)" % (phonecall.id, phonecall.contact))
+
     def perform_escalation(self, dry_run = False):
         info("{%d} Performing escalation...", self.id)
+        self.sync_acks()
         if self.dt_acked or not self.recipient.require_ack_min:
             debug("ACKed or ACK not required -> nothing to do")
             return False
