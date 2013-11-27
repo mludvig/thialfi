@@ -49,8 +49,8 @@ class Recipient(models.Model):
     address = models.CharField(max_length=500, help_text = 'Use only lowercase letters, digits and hyphens', validators = [ RegexValidator(r'^[a-z][a-z0-9-]+$', 'Use only lowercase letters, digits and hyphens') ])
     description = models.TextField(blank = True)
     group = models.ForeignKey(Group)
-    require_ack_min = models.IntegerField(default = 0, help_text = "Require ACK withing X minutes. 0 means ACK not required.")
-    escalation_group = models.ForeignKey(Group, related_name = "escalation_group", null = True, blank = True, help_text = "Non-ACKed messages will be escalated to this group's primary contact.")
+    require_ack_min = models.IntegerField(default = 0, help_text = "Require ACK within X minutes or trigger Escalation. 0 means ACK not required.")
+    escalation_group = models.ForeignKey(Group, related_name = "escalation_group", null = True, blank = True, help_text = "Non-ACKed messages will be escalated to this group's primary contact. If not set call the main Group again.")
 
     def __unicode__(self):
         return unicode(self.address)
@@ -167,7 +167,10 @@ class Message(models.Model):
             error("Escalated more than CALL_GRACE_MIN mins ago and not ACKed? -> Try again!")
             if not dry_run:
                 self.call_group()
-                self.call_escalation_group()
+                if not self.recipient.escalation_group or self.recipient.escalation_group.contact_primary.sms_number == self.recipient.group.contact_primary.sms_number:
+                    info("Escalation Group not set or same as Primary Contact")
+                else:
+                    self.call_escalation_group()
 
         return True
 
@@ -177,12 +180,16 @@ class Message(models.Model):
         self.save()
 
     def call_escalation_group(self):
-        self.make_call(self.recipient.escalation_group, "Escalating alert for group %s. Was unable to contact %s." % (self.recipient.group.name, self.recipient.group.contact_primary.name))
+        if not self.recipient.escalation_group:
+            debug("No escalation group set - call Primary Contact again")
+            self.make_call(self.recipient.group, "Alert for recipient %s. Group %s" % (self.recipient, self.recipient.group))
+        else:
+            self.make_call(self.recipient.escalation_group, "Escalating alert for group %s. Was unable to contact %s." % (self.recipient.group.name, self.recipient.group.contact_primary.name))
         self.dt_escalated = datetime.datetime.now()
         self.save()
 
     def make_call(self, group, text_to_say):
-        info("Calling '%s' [%s]" % (group, group.contact_primary))
+        info("Calling '%s' [%s]: %s" % (group, group.contact_primary, text_to_say))
         pc = PhoneCall(message = self, contact = group.contact_primary, text_to_say = text_to_say)
         pc.save()
         pc.call()

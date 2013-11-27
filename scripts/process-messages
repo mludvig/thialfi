@@ -24,7 +24,7 @@ for message in Message.objects.filter(dt_received__gt = dt_from):
     if message.dt_acked:
         continue
 
-    info("{%d} Processing unACKed message: received=(%s) [%s] %s" % (message.id, message.dt_received, message.recipient.group.contact_primary.sms_number, message.sms_body))
+    #debug("{%d} Processing unACKed message: received=(%s) [%s] %s" % (message.id, message.dt_received, message.recipient.group.contact_primary.sms_number, message.sms_body))
 
     # If it hasn't yet been despatched do it now
     if not message.delivery_set.all():
