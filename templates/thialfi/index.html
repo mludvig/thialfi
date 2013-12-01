@@ -5,20 +5,19 @@
 {% endblock %}
 
 {% block contentfull %}
-<h2>Messages in the queue</h2>
+<h3>On-call groups</h3>
+<dl class="oncall-list">
+{% for group in groups %}
+<dt>{{ group }}</dt>
+<dd>{{ group.contact_primary.name }} <em>({{ group.contact_primary.sms_number }})</em> [<a href="{% url app.views.group group_id=group.id %}">Change</a>]</dd>
+<dd>
+</dd>
+{% endfor %}
+</dl>
+<h3>Messages in the queue</h3>
 <table class="messages-list">
 {% for message in messages %}
 <tr class="{{ message.newest_status }}"><td class="recipient">{{ message.recipient }}</td><td class="message"><a href="{% url app.views.detail message_id=message.id %}">{{ message }}</a></td><td class="received">{{ message.dt_received }}</td><td class="status">{{ message.newest_status }}</td></tr>
 {% endfor %}
 </table>
-<h2>On-call groups</h2>
-<dl class="oncall-list">
-{% for group in groups %}
-<dt>{{ group }}</dt>
-<dd>{{ group.contact_primary.name }} <em>({{ group.contact_primary.sms_number }})</em></dd>
-{% for recipient in group.recipient_set.all %}
-<dd><a href="mailto:{{ recipient }}@{{ recipient.domain }}">{{ recipient }}</a></dd>
-{% endfor %}
-{% endfor %}
-</dl>
 {% endblock %}

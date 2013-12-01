@@ -37,6 +37,13 @@ class Group(models.Model):
     def __unicode__(self):
         return unicode(self.name)
 
+    def set_contact_primary(self, contact):
+        assert(contact in self.contacts.all())
+        old_contact = self.contact_primary
+        self.contact_primary = contact
+        self.save()
+        return old_contact
+
 class GroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'contact_primary')
 
