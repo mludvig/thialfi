@@ -53,7 +53,7 @@ admin.site.register(Group, GroupAdmin)
 
 __all__.append("Recipient")
 class Recipient(models.Model):
-    address = models.CharField(max_length=500, help_text = 'Use only lowercase letters, digits and hyphens', validators = [ RegexValidator(r'^[a-z][a-z0-9-]+$', 'Use only lowercase letters, digits and hyphens') ])
+    address = models.CharField(max_length=500, help_text = 'Use only lowercase letters, digits and hyphens', validators = [ RegexValidator(r'^[a-z][a-z0-9\._-]+$', 'Use only lowercase letters, digits and hyphens') ])
     description = models.TextField(blank = True)
     group = models.ForeignKey(Group)
     require_ack_min = models.IntegerField(default = 0, help_text = "Require ACK within X minutes or trigger Escalation. 0 means ACK not required.")
