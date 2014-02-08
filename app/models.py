@@ -149,13 +149,11 @@ class Message(models.Model):
                 self.acknowledge(phonecall.dt_acked, "PhoneCall %s (%s)" % (phonecall.id, phonecall.contact))
 
     def perform_escalation(self, dry_run = False):
-        debug("{%d} Performing escalation...", self.id)
         self.sync_acks()
         if self.dt_acked or not self.recipient.require_ack_min:
-            debug("ACKed or ACK not required -> nothing to do")
             return False
 
-        debug("We need ACK - is it due yet?")
+        debug("{%d} Performing escalation...", self.id)
         if not self.older_than(self.dt_received, self.recipient.require_ack_min):
             debug("Received less than ACK-mins ago -> nothing to do")
             return False
