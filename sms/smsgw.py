@@ -20,8 +20,8 @@ def despatch(message, contact):
 
 def get_status(sms_id):
     sender = SmsSender()
-    return sender.get_status(mids = [sms_id], keep = True)[0]
+    return sender.get_status(mids = [sms_id], keep = False)[0]
 
 def get_replies(delivery_id):
     sender = SmsSender()
-    return sender.receive(in_reply_to = [delivery_id], keep = True)
+    return sender.receive(in_reply_to = [delivery_id], keep = False)
