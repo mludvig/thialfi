@@ -21,7 +21,7 @@ from app.models import *
 ## Only resend last 1 day of messages
 dt_from=datetime.datetime.now()-datetime.timedelta(days=1)
 for message in Message.objects.filter(dt_received__gt = dt_from, dt_acked__isnull = True):
-    debug("{%d} Processing unACKed message: received=(%s) [%s] %s" % (message.id, message.dt_received, message.recipient.group.contact_primary.sms_number, message.sms_body))
+    debug("{%d} Processing message: received=(%s) [%s] %s" % (message.id, message.dt_received, message.recipient.group.contact_primary.sms_number, message.sms_body))
 
     # If it hasn't yet been despatched do it now
     if not message.delivery_set.all():
@@ -34,7 +34,7 @@ for message in Message.objects.filter(dt_received__gt = dt_from, dt_acked__isnul
         if not message.dt_delivered:
             delivery.update_status()
             info("{%d} Updated delivery {%d} status: %s->%s : %s" % (message.id, delivery.id, delivery.dt_despatched, delivery.contact.sms_number, delivery.status))
-        if not message.dt_acked:
+        if message.recipient.require_ack_min > 0 and not message.dt_acked:
             debug("{%d} Getting replies for delivery {%d}." % (message.id, delivery.id))
             delivery.get_replies()
             for reply in delivery.reply_set.all():
