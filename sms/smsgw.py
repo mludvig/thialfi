@@ -20,7 +20,11 @@ def despatch(message, contact):
 
 def get_status(sms_id):
     sender = SmsSender()
-    return sender.get_status(mids = [sms_id], keep = False)[0]
+    status = sender.get_status(mids = [sms_id], keep = False)
+    try:
+        return status[0]
+    except:
+        return None
 
 def get_replies(delivery_id):
     sender = SmsSender()
