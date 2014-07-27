@@ -13,13 +13,22 @@ from Sms.SimpleObjects import SmsMessage
 ## Create config object
 cfg = Config(open(settings.SMS_CLI_CONF), settings.SMS_CLI_PROFILE)
 
+## Cache sender object
+_sender = None
+
+def _get_sender():
+    global _sender
+    if not _sender:
+        _sender = SmsSender()
+    return _sender
+
 def despatch(message, contact):
-    sender = SmsSender()
+    sender = _get_sender()
     smsmessage = SmsMessage(message = message, recipients = [contact.sms_number])
     return sender.send(smsmessage)[0]
 
 def get_status(sms_id):
-    sender = SmsSender()
+    sender = _get_sender()
     status = sender.get_status(mids = [sms_id], keep = False)
     try:
         return status[0]
@@ -27,5 +36,5 @@ def get_status(sms_id):
         return None
 
 def get_replies(delivery_id):
-    sender = SmsSender()
+    sender = _get_sender()
     return sender.receive(in_reply_to = [delivery_id], keep = False)
