@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Response>
-<Say voice="alice" language="en-IN">{{ text_to_say }}</Say>
+<Say voice="alice" language="en-AU">{{ text_to_say }}</Say>
 {% if say_press_1 %}
 <Gather method="GET" numDigits="1" >
-<Say voice="alice" language="en-IN">Please press 1 to acknowledge the call.</Say>
+<Say voice="alice" language="en-AU">Please press 1 to acknowledge the call.</Say>
 <Pause length="3"/>
-<Say voice="alice" language="en-IN">Please press 1 to acknowledge the call.</Say>
+<Say voice="alice" language="en-AU">Please press 1 to acknowledge the call.</Say>
 <Pause length="3"/>
-<Say voice="alice" language="en-IN">Sorry I didn't hear your digits. Good bye.</Say>
+<Say voice="alice" language="en-AU">Sorry I didn't hear your digits. Good bye.</Say>
 </Gather>
 {% endif %}
 <Hangup/>
