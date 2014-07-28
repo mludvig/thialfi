@@ -20,6 +20,9 @@ class Contact(models.Model):
     name = models.CharField(max_length=200)
     sms_number = models.CharField(max_length=200)
 
+    class Meta:
+        ordering = ['name']
+
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.sms_number)
 
@@ -33,6 +36,9 @@ class Group(models.Model):
     description = models.TextField(blank = True)
     contacts = models.ManyToManyField(Contact)
     contact_primary = models.ForeignKey(Contact, related_name = "contact_primary", help_text = "On-call contact")
+
+    class Meta:
+        ordering = ['name']
 
     def __unicode__(self):
         return unicode(self.name)
@@ -58,6 +64,9 @@ class Recipient(models.Model):
     group = models.ForeignKey(Group)
     require_ack_min = models.IntegerField(default = 0, help_text = "Require ACK within X minutes or trigger Escalation. 0 means ACK not required.")
     escalation_group = models.ForeignKey(Group, related_name = "escalation_group", null = True, blank = True, help_text = "Non-ACKed messages will be escalated to this group's primary contact. If not set call the main Group again.")
+
+    class Meta:
+        ordering = ['address']
 
     def __unicode__(self):
         return unicode(self.address)
@@ -310,7 +319,7 @@ class PhoneCall(RandomPrimaryIdModel):
 
     class Meta:
         abstract = False
-        ordering = ('-dt_queued',)
+        ordering = ['-dt_queued']
 
     def __unicode__(self):
         return u"%s:%s@%s" % (self.status, self.number_called, self.dt_queued)
