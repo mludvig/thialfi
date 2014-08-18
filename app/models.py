@@ -327,7 +327,7 @@ class PhoneCall(RandomPrimaryIdModel):
     def call(self):
         if not self.number_called:
             self.number_called = self.contact.sms_number
-        voice_url = "http://%s%s" % (settings.RCPT_DOMAIN, reverse('app.views.twilio', kwargs={ 'phonecall_id' : self.id }))
+        voice_url = settings.VOICE_URL % {'path': reverse('app.views.twilio', kwargs={ 'phonecall_id' : self.id })}
         debug("voice_url=%s" % voice_url)
         c = twiliogw.make_call(self.number_called, voice_url)
         self.status = c.status

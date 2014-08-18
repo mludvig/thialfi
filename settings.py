@@ -38,6 +38,10 @@ DATABASE_PORT = ''             # Set to empty string for default. Not used with 
 
 RCPT_DOMAIN = "sms.your.domain"
 
+## The URL for voice messages. %(path)s will be substitued by the actual path.
+## This must be accessible from outside.
+VOICE_URL = "https://sms.your.domain/%(path)s"
+
 ## SMS-CLI setup
 # Download sms-cli from https://github.com/mludvig/sms-cli.git
 SMS_CLI_PATH = "/path/to/sms-cli"
