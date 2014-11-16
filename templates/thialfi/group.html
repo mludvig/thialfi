@@ -1,0 +1,20 @@
+{% extends "_base.html" %}
+
+{% block contentsub %}
+{% if error_message %}
+<strong>{{ error_message }}</strong>
+{% endif %}
+{% endblock %}
+
+{% block contentfull %}
+<h3>{{ group }}</h3>
+<form action="{% url app.views.group group.id %}" method="post">
+{% csrf_token %}
+Select on-call contact: <select name="contact">
+{% for contact in group.contacts.all %}
+<option value="{{ contact.id }}" {% if group.contact_primary == contact %}selected="1"{% endif %}>{{ contact }}</option>
+{% endfor %}
+</select>
+<input type="submit" value="Save" />
+</form>
+{% endblock %}
