@@ -15,35 +15,44 @@ setup_environ(settings)
 
 ## -- Here comes the script -- ##
 from thialfi.logger import *
-import datetime
+from datetime import datetime, timedelta
+from time import sleep
 from app.models import *
 
-## Only resend last 1 day of messages
-dt_from=datetime.datetime.now()-datetime.timedelta(days=1)
-messages = Message.objects.filter(dt_received__gt = dt_from, dt_acked__isnull = True)
-info("Processing %d messages from %s" % (len(messages), dt_from))
-for message in messages:
-    #debug("{%d} Processing message: received=(%s) [%s] %s" % (message.id, message.dt_received, message.recipient.group.contact_primary.sms_number, message.sms_body))
+last_run_timestamp = datetime.now()
+while True:
+    wait_sec = 60 - (datetime.now() - last_run_timestamp).total_seconds()
+    if wait_sec > 0:
+        debug("sleeping %d sec..." % wait_sec)
+        sleep(wait_sec)
+    last_run_timestamp = datetime.now()
 
-    # If it hasn't yet been despatched do it now
-    if not message.delivery_set.all():
-        info("{%d} Despatching message to [%s]" % (message.id, message.recipient.group.contact_primary.sms_number))
-        message.despatch()
-        continue
+    ## Only resend last 1 day of messages
+    dt_from = datetime.now() - timedelta(days=1)
+    messages = Message.objects.filter(dt_received__gt = dt_from, dt_acked__isnull = True)
+    info("Processing %d messages from %s" % (len(messages), dt_from))
+    for message in messages:
+        #debug("{%d} Processing message: received=(%s) [%s] %s" % (message.id, message.dt_received, message.recipient.group.contact_primary.sms_number, message.sms_body))
 
-    # Update delivery statuses, fetch replies
-    for delivery in message.delivery_set.all():
-        if not message.dt_delivered:
-            delivery.update_status()
-            info("{%d} Updated delivery {%d} status: %s->%s : %s" % (message.id, delivery.id, delivery.dt_despatched, delivery.contact.sms_number, delivery.status))
-        if message.recipient.require_ack_min > 0 and not message.dt_acked:
-            debug("{%d} Getting replies for delivery {%d}." % (message.id, delivery.id))
-            delivery.get_replies()
-            for reply in delivery.reply_set.all():
-                info("{%d} Received reply: %s [%s] %s" % (message.id, reply.sender, reply.dt_received, reply.message))
+        # If it hasn't yet been despatched do it now
+        if not message.delivery_set.all():
+            info("{%d} Despatching message to [%s]" % (message.id, message.recipient.group.contact_primary.sms_number))
+            message.despatch()
+            continue
 
-    if message.dt_acked:
-        continue
+        # Update delivery statuses, fetch replies
+        for delivery in message.delivery_set.all():
+            if not message.dt_delivered:
+                delivery.update_status()
+                info("{%d} Updated delivery {%d} status: %s->%s : %s" % (message.id, delivery.id, delivery.dt_despatched, delivery.contact.sms_number, delivery.status))
+            if message.recipient.require_ack_min > 0 and not message.dt_acked:
+                debug("{%d} Getting replies for delivery {%d}." % (message.id, delivery.id))
+                delivery.get_replies()
+                for reply in delivery.reply_set.all():
+                    info("{%d} Received reply: %s [%s] %s" % (message.id, reply.sender, reply.dt_received, reply.message))
 
-    # See if it needs to be escalated
-    message.perform_escalation()
+        if message.dt_acked:
+            continue
+
+        # See if it needs to be escalated
+        message.perform_escalation()
