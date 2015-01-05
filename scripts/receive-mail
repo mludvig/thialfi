@@ -14,7 +14,6 @@ from thialfi import settings
 setup_environ(settings)
 
 ## -- Here comes the script -- ##
-import syslog
 import re
 import email
 import base64
