@@ -1,17 +1,6 @@
-import sys
 from thialfi import settings
-
-try:
-    sys.path.append(settings.SMS_CLI_PATH)
-except:
-    pass
-
-from Sms.Config import Config
-from Sms.Sender import SmsSender
-from Sms.SimpleObjects import SmsMessage
-
-## Create config object
-cfg = Config(open(settings.SMS_CLI_CONF), settings.SMS_CLI_PROFILE)
+from sms.Sender import SmsSender
+from sms.SimpleObjects import SmsMessage
 
 ## Cache sender object
 _sender = None

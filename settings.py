@@ -42,11 +42,10 @@ RCPT_DOMAIN = "sms.your.domain"
 ## This must be accessible from outside.
 VOICE_URL = "https://sms.your.domain/%(path)s"
 
-## SMS-CLI setup
-# Download sms-cli from https://github.com/mludvig/sms-cli.git
-SMS_CLI_PATH = "/path/to/sms-cli"
-SMS_CLI_CONF = "/path/to/sms-cli/sms-cli.conf"
-SMS_CLI_PROFILE = "default"
+## SMS Engine setup
+SMS_ENGINE = "MessageMedia"
+# Various engines may have different options.
+SMS_ENGINE_OPTIONS = { "username": "abc123", "password": "Blah Blah" }
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
