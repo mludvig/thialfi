@@ -14,13 +14,14 @@ from thialfi import settings
 setup_environ(settings)
 
 ## -- Here comes the script -- ##
+from thialfi.logger import *
 from app.models import *
 
 for group in Group.objects.all():
-	print u"[%s]" % group.name
+	info(u"[%s]" % group.name)
 	for contact in group.contacts.all():
 		is_primary = (contact == group.contact_primary)
-		print u" %s %s" % (is_primary and ">" or " ", contact.name)
+		info(u" %s %s" % (is_primary and ">" or " ", contact.name))
 	if group.contact_primary not in group.contacts.all():
-		print u"!> %s" % group.contact_primary.name
-	print
+		warn(u"!> %s" % group.contact_primary.name)
+	info("===")

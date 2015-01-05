@@ -20,6 +20,8 @@ def findCaller():
         filename = os.path.normcase(co.co_filename)
         if filename.startswith(_thialfi_logger_dir_base):
             filename = os.path.relpath(filename, _thialfi_logger_dir_base)
+        elif filename.startswith("./"):
+            filename = filename[2:]
         rv = (filename, f.f_lineno, co.co_name)
     return rv
 
@@ -41,14 +43,15 @@ def warning(msg, *args, **kwargs):
 def error(msg, *args, **kwargs):
     thialfi_logger.error(deunicode(msg), *args, **kwargs)
 
+# Configure logger only once
 thialfi_logger = logging.getLogger('thialfi')
-thialfi_logger.setLevel(logging.DEBUG)
-thialfi_logger.findCaller = findCaller
+if not thialfi_logger.handlers:
+    thialfi_logger.setLevel(logging.DEBUG)
+    thialfi_logger.findCaller = findCaller
 
-stderr_handler = logging.StreamHandler()
-stderr_formatter = logging.Formatter('[%(pathname)s:%(lineno)d] %(levelname)s: %(message)s')
-stderr_handler.setFormatter(stderr_formatter)
-thialfi_logger.addHandler(stderr_handler)
+    stderr_handler = logging.StreamHandler()
+    stderr_formatter = logging.Formatter('%(asctime)s [%(pathname)s:%(lineno)d] %(levelname)s: %(message)s',
+                                         '%Y-%m-%d %H:%M:%S')
+    stderr_handler.setFormatter(stderr_formatter)
 
-debug("logger.py: Starting up...")
-
+    thialfi_logger.addHandler(stderr_handler)
