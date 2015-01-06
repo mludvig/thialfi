@@ -223,6 +223,25 @@ class MessageAdmin(admin.ModelAdmin):
 
 admin.site.register(Message, MessageAdmin)
 
+### MessageStatus model
+
+__all__.append("MessageStatus")
+class MessageStatus(models.Model):
+    STATUSES = (
+        ('unknown', 'unknown'),
+        ('received', 'received'),
+        ('ignored', 'ignored'),
+        ('transit', 'transit'),
+        ('expired', 'expired'),
+        ('delivered', 'delivered'),
+        ('called', 'called'),
+        ('acked', 'acked'),
+    )
+    message = models.ForeignKey(Message)
+    status = models.CharField(max_length = 20, choices = STATUSES, null = False, editable = False)
+    dt_status = models.DateTimeField(null = False, editable = False)
+    note = models.CharField(max_length = 500, default = "", editable = False)
+
 ### Delivery model
 
 __all__.append("Delivery")
