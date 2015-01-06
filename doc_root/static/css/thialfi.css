@@ -34,6 +34,10 @@ table.messages-list tr td, table.message-detail tr td {
 	padding: 3px;
 }
 
+table.messages-list tr.acked {
+	background-color: #afa;
+}
+
 table.messages-list tr.delivered {
 	background-color: #dfd;
 }
