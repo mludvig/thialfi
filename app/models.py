@@ -94,13 +94,8 @@ class Message(models.Model):
     hdr_message_id = models.CharField(max_length=500)
     # Resolved recipient
     recipient = models.ForeignKey(Recipient)
-    # Timestamps
+    # Timestamp
     dt_received = models.DateTimeField(auto_now_add = True)
-    dt_delivered = models.DateTimeField(blank = True, null = True)
-    dt_acked = models.DateTimeField(blank = True, null = True)
-    dt_called = models.DateTimeField(blank = True, null = True)
-    dt_escalated = models.DateTimeField(blank = True, null = True)
-    dt_expired = models.DateTimeField(blank = True, null = True)
 
     def __unicode__(self):
         return self.sms_body
@@ -109,12 +104,11 @@ class Message(models.Model):
         if dt_acked is None:
             dt_acked = datetime.datetime.now()
         info("{%d} ACK by %s @ %s" % (self.id, ack_by, dt_acked))
-        if not self.dt_acked or dt_acked > self.dt_acked:
-            self.dt_acked = dt_acked
-        self.save()
+        status = MessageStatus(message = self, status = 'acked', dt_status = dt_acked, note = ack_by)
+        status.save()
 
     def despatch(self):
-        if self.dt_delivered or self.dt_expired:
+        if self.get_status('delivered') or self.get_status('expired'):
             return
         if self.delivery_set.all():
             ## Delivery in progress
@@ -137,11 +131,31 @@ class Message(models.Model):
             delivery.update_status()
 
     def newest_status(self):
-        try:
-            delivery = self.delivery_set.order_by('dt_status')[0]
-            return delivery.status.split(" ")[0].lower()
-        except IndexError:
-            return "unknown"
+        ms_set = self.messagestatus_set.order_by("-dt_status")
+        if ms_set:
+            return ms_set[0]
+        else:
+            return MessageStatus(status = 'received', dt_status = self.dt_received)
+
+    def add_status(self, status, dt_status = None, note = ""):
+        if not dt_status:
+            dt_status = datetime.datetime.now()
+        MessageStatus(message = self, status = status, dt_status = dt_status, note = note).save()
+
+    def get_status(self, status):
+        if status == 'received':
+            return MessageStatus(status = 'received', dt_status = self.dt_received)
+        # else
+        ms_set = self.messagestatus_set.filter(status = status).order_by("-dt_status")
+        if ms_set:
+            return ms_set[0]
+        return None
+
+    def get_timestamp(self, status):
+        ms = self.get_status(status)
+        if ms:
+            return ms.dt_status
+        return None
 
     def older_than(self, timestamp, minutes):
         return bool(timestamp) and timestamp + datetime.timedelta(minutes = minutes) < datetime.datetime.now()
@@ -159,7 +173,7 @@ class Message(models.Model):
 
     def perform_escalation(self, dry_run = False):
         self.sync_acks()
-        if self.dt_acked or not self.recipient.require_ack_min:
+        if self.get_status('acked') or not self.recipient.require_ack_min:
             return False
 
         debug("{%d} Performing escalation...", self.id)
@@ -168,25 +182,25 @@ class Message(models.Model):
             return False
 
         debug("ACK overdue")
-        if not self.dt_called:
+        if not self.get_status('called'):
             debug("Not yet called -> call now")
             if not dry_run:
                 self.call_group()
             return True
 
         debug("Already called -> are we in CALL_GRACE period?")
-        if not self.older_than(self.dt_called, settings.CALL_GRACE_MIN):
+        if not self.older_than(self.get_timestamp('called'), settings.CALL_GRACE_MIN):
             debug("Yes we are, called less than CALL_GRACE_MIN ago -> nothing to do")
             return False
 
         debug("Call to Primary Contact not ACKed in time")
-        if not self.dt_escalated:
+        if not self.get_status('escalated'):
             debug("Not yet escalated -> escalate now")
             if not dry_run:
                 self.call_escalation_group()
             return True
 
-        if self.older_than(self.dt_escalated, settings.CALL_GRACE_MIN):
+        if self.older_than(self.get_timestamp('escalated'), settings.CALL_GRACE_MIN):
             debug("Escalated more than CALL_GRACE_MIN mins ago and not ACKed? -> Try again!")
             if not dry_run:
                 self.call_group()
@@ -198,27 +212,26 @@ class Message(models.Model):
         return True
 
     def call_group(self):
-        self.make_call(self.recipient.group, "Alert for recipient %s. Group %s" % (self.recipient, self.recipient.group))
-        self.dt_called = datetime.datetime.now()
-        self.save()
+        message = "Alert for recipient %s. Group %s" % (self.recipient, self.recipient.group)
+        self.make_call(self.recipient.group, message)
 
     def call_escalation_group(self):
         if not self.recipient.escalation_group:
-            debug("No escalation group set - call Primary Contact again")
+            self.add_status('escalated', note = "No escalation group set - call Primary Contact again")
             self.make_call(self.recipient.group, "Alert for recipient %s. Group %s" % (self.recipient, self.recipient.group))
         else:
+            self.add_status('escalated', note = "Calling escalation group %s" % self.recipient.escalation_group)
             self.make_call(self.recipient.escalation_group, "Escalating alert for group %s. Was unable to contact %s." % (self.recipient.group.name, self.recipient.group.contact_primary.name))
-        self.dt_escalated = datetime.datetime.now()
-        self.save()
 
     def make_call(self, group, text_to_say):
         info("Calling '%s' [%s]: %s" % (group, group.contact_primary, text_to_say))
         pc = PhoneCall(message = self, contact = group.contact_primary, text_to_say = text_to_say)
         pc.save()
+        self.add_status('called', note = text_to_say)
         pc.call()
 
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('sms_body', 'recipient', 'dt_received', 'dt_acked')
+    list_display = ('sms_body', 'recipient', 'dt_received')
     list_filter = ('recipient', 'dt_received')
 
 admin.site.register(Message, MessageAdmin)
@@ -235,12 +248,16 @@ class MessageStatus(models.Model):
         ('expired', 'expired'),
         ('delivered', 'delivered'),
         ('called', 'called'),
+        ('escalated', 'escalated'),
         ('acked', 'acked'),
     )
     message = models.ForeignKey(Message)
     status = models.CharField(max_length = 20, choices = STATUSES, null = False, editable = False)
     dt_status = models.DateTimeField(null = False, editable = False)
     note = models.CharField(max_length = 500, default = "", editable = False)
+
+    def __unicode__(self):
+        return u"%s %s [%s]" % (self.dt_status.strftime("%Y-%m-%d %H:%M:%S"), self.status, self.note)
 
 ### Delivery model
 
@@ -268,9 +285,8 @@ class Delivery(models.Model):
                 self.status = status.status
                 self.dt_status = status.timestamp
                 self.save()
-        if self.status.startswith("DELIVERED") and not self.message.dt_delivered:
-            self.message.dt_delivered = self.dt_status
-            self.message.save()
+        if self.status.startswith("DELIVERED") and not self.message.get_status('delivered'):
+            self.message.add_status('delivered', dt_status = self.dt_status)
 
     def get_replies(self, force = False):
         if force or not self.reply_set.all():
@@ -287,7 +303,7 @@ class Delivery(models.Model):
                     reply.reply_id = r_reply.mid
                     reply.sender = r_reply.sender
                     reply.save()
-        if not self.message.dt_acked:
+        if not self.message.get_status('acked'):
             for reply in self.reply_set.all():
                 self.message.acknowledge(reply.dt_received, "Reply %d (%s)" % (reply.id, reply.delivery.contact))
 
