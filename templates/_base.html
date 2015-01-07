@@ -3,18 +3,27 @@
 <head>
 <title>Thialfi : text messaging gateway</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<link rel="shortcut icon" href="/favicon.ico" />
+<link rel="shortcut icon" href="/static/favicon.ico" />
+
+<!-- Mobile Specific Metas -->
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'>
+
+<link rel="stylesheet" type="text/css" href="/static/css/normalize.css?{{ MEDIA_REV }}" />
+<link rel="stylesheet" type="text/css" href="/static/css/skeleton.css?{{ MEDIA_REV }}" />
 <link rel="stylesheet" type="text/css" href="/static/css/thialfi.css?{{ MEDIA_REV }}" />
 {% block extrahead %}{% endblock %}
 </head>
 
-<body class="yui-skin-sam" id="body">
+<body id="body">
+<div class="container">
 <h1 id="page-title"><a href="{% url app.views.index %}">Thialfi the messenger</a></h1>
-<div id="body-content">
+</div>
+<div id="body-content" class="container">
 {% block contentsub %}
 {# Create empty "contentsub" on pages that use "contentfull" to remove it #}
-<div id="mainrightsub">
-<h1>{% block page_title %}{% endblock %}</h1>
+<div id="mainrightsub" class="container">
+<h2>{% block page_title %}{% endblock %}</h2>
 {% block content %}{% endblock %}
 </div>
 {% endblock %}
