@@ -10,5 +10,5 @@ class GenericSmsDriver(object):
         self.set_options(options)
 
     def set_options(self, options):
-        debug("Setting options to: %r" % options)
+        #debug("Setting options to: %r" % options)
         self.options = options

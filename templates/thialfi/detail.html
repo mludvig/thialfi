@@ -12,12 +12,15 @@
 <tr><td class="label">Subject:</td><td class="content">{{ message.hdr_subject }}</td></tr>
 <tr><td class="label">Body:</td><td class="content"><pre>{{ message.body }}</pre></td></tr>
 <tr><td class="label">Received:</td><td class="content">{{ message.dt_received }}</td></tr>
-<tr><td class="label">Delivered:</td><td class="content">{{ message.dt_delivered }}</td></tr>
-<!--
-<tr><td class="label">Escalated:</td><td class="content">{{ message.dt_delivered }}</td></tr>
-<tr><td class="label">Expired:</td><td class="content">{{ message.dt_delivered }}</td></tr>
--->
+<tr><td class="label">Newest status:</td><td class="content">{{ message.newest_status.status }}</td></tr>
 </table>
+<h3 class="table-header">Status log</h3>
+<table class="message-detail">
+{% for status in message.messagestatus_set.all %}
+<tr><td>{{ status.dt_status }}</td><td>{{ status.status }}</td><td>{{ status.note }}</td></tr>
+{% endfor %}
+</table>
+
 <h3 class="table-header">Delivery attempts</h3>
 {% for delivery in message.delivery_set.all %}
 <table class="message-detail">
@@ -30,9 +33,9 @@
 <h3 class="table-header">Replies</h3>
 {% for reply in delivery.reply_set.all %}
 <table class="message-detail">
-<tr><td class="label">Content:</td><td>{{ reply.content }}</td></tr>
+<tr><td class="label">Message:</td><td>{{ reply.message }}</td></tr>
 <tr><td class="label">Received:</td><td>{{ reply.dt_received }}</td></tr>
-<tr><td class="label">Origin:</td><td>{{ reply.origin }}</td></tr>
+<tr><td class="label">Sender:</td><td>{{ reply.sender }}</td></tr>
 </table>
 {% endfor %}
 {% endfor %}
