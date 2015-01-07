@@ -4,6 +4,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator
 from django.contrib import admin
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 from thialfi.logger import *
 from thialfi.voice import twiliogw
@@ -134,8 +136,6 @@ class Message(models.Model):
         ms_set = self.messagestatus_set.order_by("-dt_status")
         if ms_set:
             return ms_set[0]
-        else:
-            return MessageStatus(status = 'received', dt_status = self.dt_received)
 
     def add_status(self, status, dt_status = None, note = ""):
         if not dt_status:
@@ -143,9 +143,6 @@ class Message(models.Model):
         MessageStatus(message = self, status = status, dt_status = dt_status, note = note).save()
 
     def get_status(self, status):
-        if status == 'received':
-            return MessageStatus(status = 'received', dt_status = self.dt_received)
-        # else
         ms_set = self.messagestatus_set.filter(status = status).order_by("-dt_status")
         if ms_set:
             return ms_set[0]
@@ -229,6 +226,11 @@ class Message(models.Model):
         pc.save()
         self.add_status('called', note = text_to_say)
         pc.call()
+
+@receiver(post_save, sender = Message)
+def message_add_default_status(sender, instance, created, **kwargs):
+    if created and not instance.get_status('received'):
+        instance.add_status('received')
 
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('sms_body', 'recipient', 'dt_received')
