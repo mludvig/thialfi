@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block contentfull %}
-<h3 class="table-header">Message for <u>{{ message.recipient.group }}</u> via <u>{{ message.recipient }}</u></h3>
-<table class="message-detail">
+<h3 class="table-header">Message for group <strong>{{ message.recipient.group }}</strong> via <strong>{{ message.recipient }}</strong></h3>
+<table class="message-detail u-full-width">
 <tr><td class="label">From:</td><td class="content">{{ message.hdr_sender }}</td></tr>
 <tr><td class="label">To:</td><td class="content">{{ message.hdr_recipient }}</td></tr>
 <tr><td class="label">Subject:</td><td class="content">{{ message.hdr_subject }}</td></tr>
@@ -15,28 +15,34 @@
 <tr><td class="label">Newest status:</td><td class="content">{{ message.newest_status.status }}</td></tr>
 </table>
 <h3 class="table-header">Status log</h3>
-<table class="message-detail">
+<table class="message-detail u-full-width">
 {% for status in message.messagestatus_set.all %}
 <tr><td>{{ status.dt_status }}</td><td>{{ status.status }}</td><td>{{ status.note }}</td></tr>
 {% endfor %}
 </table>
 
+{% if message.delivery_set.all %}
 <h3 class="table-header">Delivery attempts</h3>
 {% for delivery in message.delivery_set.all %}
-<table class="message-detail">
+<table class="message-detail u-full-width">
 <tr><td class="label">Recipient:</td><td>{{ delivery.contact }}</td></tr>
 <tr><td class="label">Status:</td><td>{{ delivery.status }}</td></tr>
 <tr><td class="label">Despatched:</td><td>{{ delivery.dt_despatched }}</td></tr>
 <tr><td class="label">Status updated:</td><td>{{ delivery.dt_status }}</td></tr>
 <tr><td class="label">SMS ID:</td><td>{{ delivery.sms_id }}</td></tr>
 </table>
+
+{% if delivery.reply_set.all %}
 <h3 class="table-header">Replies</h3>
 {% for reply in delivery.reply_set.all %}
-<table class="message-detail">
+<table class="message-detail u-full-width">
 <tr><td class="label">Message:</td><td>{{ reply.message }}</td></tr>
 <tr><td class="label">Received:</td><td>{{ reply.dt_received }}</td></tr>
 <tr><td class="label">Sender:</td><td>{{ reply.sender }}</td></tr>
 </table>
 {% endfor %}
+{% endif %}
+
 {% endfor %}
+{% endif %}
 {% endblock %}
