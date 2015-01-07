@@ -47,6 +47,14 @@ SMS_ENGINE = "MessageMedia"
 # Various engines may have different options.
 SMS_ENGINE_OPTIONS = { "username": "abc123", "password": "Blah Blah" }
 
+# How many messages in a given timeframe can be passed through?
+# Excess messages will be ignored
+# E.g. to only pass through 5 messages every 15 minutes per Recipient
+#    RECENT_MINUTES = 15
+#    RECENT_MESSAGES = 5
+RECENT_MINUTES = 15
+RECENT_MESSAGES = 5
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.

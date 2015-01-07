@@ -110,7 +110,17 @@ class Message(models.Model):
         status.save()
 
     def despatch(self):
-        if self.get_status('delivered') or self.get_status('expired'):
+        if self.get_status('delivered') or self.get_status('expired') or self.get_status('ignored'):
+            return
+        recent_timestamp = datetime.datetime.now() - datetime.timedelta(minutes = settings.RECENT_MINUTES)
+        recent_messages = MessageStatus.objects.filter(
+                status = 'received',
+                message__recipient = self.recipient,
+                message__dt_received__gt = recent_timestamp)
+        if recent_messages.count() >= settings.RECENT_MESSAGES:
+            message = '%d messages received in the last %d minutes' % (recent_messages.count(), settings.RECENT_MINUTES)
+            info("Ignoring message for %s: %s" % (self.recipient, message))
+            self.add_status('ignored', note = message)
             return
         if self.delivery_set.all():
             ## Delivery in progress
