@@ -25,7 +25,30 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        raise RuntimeError("This migration can't be reverted!")
+        # Adding field 'Message.dt_acked'
+        db.add_column('app_message', 'dt_acked',
+                      self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Message.dt_expired'
+        db.add_column('app_message', 'dt_expired',
+                      self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Message.dt_escalated'
+        db.add_column('app_message', 'dt_escalated',
+                      self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Message.dt_delivered'
+        db.add_column('app_message', 'dt_delivered',
+                      self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Message.dt_called'
+        db.add_column('app_message', 'dt_called',
+                      self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True),
+                      keep_default=False)
 
 
     models = {
