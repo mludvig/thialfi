@@ -1,0 +1,46 @@
+# Thialfi configuration file - customise to your liking
+# You will need:
+# - MessageMedia.com account with permission to send SMS
+# - Twilio.com account with an allocated phone number
+# - MySQL database
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'thialfi_dbname',               # <== Change this
+        'USER': 'thialfi_user',                 # <== this
+        'PASSWORD': 'FYIsgUVkef',               # <== this
+        'HOST': '172.17.42.1',                  # <== and this
+        'PORT': '',
+        'OPTIONS'  : { 'init_command' : 'SET storage_engine=MyISAM', },
+    }
+}
+
+RCPT_DOMAIN = "sms.example.com"                 # <== Change this
+
+VOICE_URL = "http://sms.example.com/%(path)s"   # <== and this
+
+## SMS-CLI setup (engine specific)
+SMS_ENGINE = "MessageMedia"
+SMS_ENGINE_OPTIONS = {
+    'username': "isms091",                      # <== Change this
+    'password': "q3BQTtnM"                      # <== and this
+}
+
+# TWILIO setup
+TWILIO_SID    = "ACabcd..."                     # <== Change this
+TWILIO_TOKEN  = "012345..."                     # <== this
+TWILIO_FROM   = "+649812345"                    # <== and this
+
+## Various settings - probably ok but feel free to change
+
+# Give the Contact X minutes to answer the call.
+# No other call will be initiated to the same Recipient within
+# this timeframe.
+CALL_GRACE_MIN = 2
+
+# How many messages in a given timeframe can be passed through?
+# Excess messages will be ignored
+# E.g. to only pass through 5 messages every 15 minutes per Recipient use:
+RECENT_MINUTES = 15
+RECENT_MESSAGES = 5

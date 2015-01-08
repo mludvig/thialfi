@@ -1,5 +1,5 @@
 *.pyc
-/settings_local*
+/settings_local*.py
 /postfix/*.db
 /postfix/domain
 /postfix/transport
