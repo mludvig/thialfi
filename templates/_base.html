@@ -12,14 +12,33 @@
 <link rel="stylesheet" type="text/css" href="/static/css/normalize.css?{{ MEDIA_REV }}" />
 <link rel="stylesheet" type="text/css" href="/static/css/skeleton.css?{{ MEDIA_REV }}" />
 <link rel="stylesheet" type="text/css" href="/static/css/thialfi.css?{{ MEDIA_REV }}" />
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="/static/js/navbar.js"></script>
 {% block extrahead %}{% endblock %}
 </head>
 
 <body id="body">
 <div class="container">
-<h1 id="page-title"><a href="{% url app.views.index %}">Thialfi the messenger</a></h1>
+    <section class="header">
+        <h1 id="page-title"><a href="{% url app.views.index %}">Thialfi the On-Call messenger</a></h1>
+    </section>
+
+    <div class="navbar-spacer"></div>
+    <nav class="navbar">
+        <div class="container">
+            <ul class="navbar-list">
+                <li class="navbar-item"><a class="navbar-link" href="/">Groups &amp; Messages</a></li>
+<!--
+                <li class="navbar-item"><a class="navbar-link" href="/messages/">Messages</a></li>
+                <li class="navbar-item"><a class="navbar-link" href="/recipients/">Recipients</a></li>
+-->
+                <li class="navbar-item"><a class="navbar-link" href="/admin/">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+    </div>
 </div>
-<div id="body-content" class="container">
+<div id="body-content" class="container body-content">
 {% block contentsub %}
 {# Create empty "contentsub" on pages that use "contentfull" to remove it #}
 <div id="mainrightsub" class="container">
