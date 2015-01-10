@@ -297,8 +297,9 @@ class Delivery(models.Model):
                 self.status = status.status
                 self.dt_status = status.timestamp
                 self.save()
+                self.message.add_status(self.status.lower(), note = "SMSC timestamp: %s" % self.dt_status)
         if self.status.startswith("DELIVERED") and not self.message.get_status('delivered'):
-            self.message.add_status('delivered', dt_status = self.dt_status)
+            self.message.add_status('delivered', note = "SMSC timestamp: %s" % self.dt_status)
 
     def get_replies(self, force = False):
         if force or not self.reply_set.all():
