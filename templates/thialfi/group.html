@@ -17,4 +17,20 @@
 {% if error_message %}
 <strong>{{ error_message }}</strong>
 {% endif %}
+<table class="u-full-width">
+<thead>
+    <tr>
+        <th>Recipient address</th>
+        <th>Description</th>
+    </tr>
+</thead>
+<tbody>
+{% for recipient in group.recipient_set.all %}
+<tr>
+    <td><a href="mailto:{{ recipient }}@{{ domain }}"><strong>{{ recipient }}</strong>@{{ domain }}</a></td>
+    <td>{{ recipient.description }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
 {% endblock %}

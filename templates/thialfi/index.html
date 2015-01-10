@@ -12,16 +12,14 @@
         <th>Group</th>
         <th>On-call Contact</th>
         <th>SMS Number</th>
-        <th>&nbsp;</th>
     </tr>
 </thead>
 <tbody>
 {% for group in groups %}
 <tr>
-<td>{{ group }}</td>
-<td>{{ group.contact_primary.name }}</td>
+<td><a href="{% url app.views.group group_id=group.id %}">{{ group }}</a></td>
+<td><a href="{% url app.views.group group_id=group.id %}">{{ group.contact_primary.name }}</a></td>
 <td>{{ group.contact_primary.sms_number }}</td>
-<td><a href="{% url app.views.group group_id=group.id %}">Change</a></td>
 </tr>
 {% endfor %}
 </tbody>

@@ -10,7 +10,6 @@
 <tr><td class="label">From:</td><td class="content">{{ message.hdr_sender }}</td></tr>
 <tr><td class="label">To:</td><td class="content">{{ message.hdr_recipient }}</td></tr>
 <tr><td class="label">Subject:</td><td class="content">{{ message.hdr_subject }}</td></tr>
-<tr><td class="label">Body:</td><td class="content"><pre>{{ message.body }}</pre></td></tr>
 <tr><td class="label">Received:</td><td class="content">{{ message.dt_received }}</td></tr>
 <tr><td class="label">Newest status:</td><td class="content">{{ message.newest_status.status }}</td></tr>
 </table>
@@ -20,6 +19,9 @@
 <tr><td>{{ status.dt_status }}</td><td>{{ status.status }}</td><td>{{ status.note }}</td></tr>
 {% endfor %}
 </table>
+<pre class="u-full-width message-body">
+{{ message.body }}
+</pre>
 
 {% if message.delivery_set.all %}
 <h3 class="table-header">Delivery attempts</h3>

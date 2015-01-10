@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from django.template import RequestContext
+from django.conf import settings
 from utils import render_template, get_object_or_404
 from models import *
 from datetime import timedelta, datetime
@@ -70,6 +71,7 @@ def group(request, template, group_id):
     return render_template(request, template, {
             "group" : group,
             "error_message" : error_message,
+            "domain" : settings.RCPT_DOMAIN,
         },
         context_instance =  RequestContext(request)
     )

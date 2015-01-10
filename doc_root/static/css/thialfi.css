@@ -74,6 +74,12 @@ table.message-detail tr td.label {
     padding: 2rem 0;
 }
 
+pre.message-body {
+    overflow: auto;
+    color: #777;
+    max-height: 40rem;
+}
+
 /* -- navbar -- from getskeleton.com */
 .navbar {
     display: none;
