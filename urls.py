@@ -6,6 +6,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     (r'^$', 'app.views.index', { 'template' : 'thialfi/index.html' }),
+    (r'^messages/$', 'app.views.messages', { 'template' : 'thialfi/messages.html' }),
     (r'^detail/(?P<message_id>\d+)/$', 'app.views.detail', { 'template' : 'thialfi/detail.html' }),
     (r'^group/(?P<group_id>\d+)/$', 'app.views.group', { 'template' : 'thialfi/group.html' }),
     (r'^tw/(?P<phonecall_id>\w+)/$', 'app.views.twilio', { 'template' : 'thialfi/twilio.xml' }),

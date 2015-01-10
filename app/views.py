@@ -6,22 +6,22 @@ from datetime import timedelta, datetime
 from thialfi.logger import *
 
 def index(request, template):
-    # Display only last 1 week worth of messages
-    msg_epoch = datetime.now() - timedelta(weeks=1)
-
     recipients = Recipient.objects.all()
     groups = Group.objects.all()
-    messages = Message.objects.filter(dt_received__gt=msg_epoch).order_by('-dt_received')
 
-    #for group in Group.objects.all():
-    #    for contact in group.contacts.all():
-    #        is_primary = (contact == group.contact_primary)
-    #        print u" %s %s" % (is_primary and ">" or " ", contact.name)
-    #    if group.contact_primary not in group.contacts.all():
-    #        print u"!> %s" % group.contact_primary.name
     return render_template(request, template, {
         "groups" : groups,
         "recipients" : recipients,
+    })
+
+def messages(request, template):
+    # Display only last 1 week worth of messages
+    msg_epoch = datetime.now() - timedelta(weeks=1)
+    messages = Message.objects.filter(dt_received__gt=msg_epoch).order_by('-dt_received')
+    groups = Group.objects.all()
+
+    return render_template(request, template, {
+        "groups" : groups,
         "messages" : messages
     })
 

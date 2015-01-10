@@ -26,25 +26,4 @@
 {% endfor %}
 </tbody>
 </table>
-<h3>Messages in the queue</h3>
-<table class="u-full-width messages-list">
-<thead>
-    <tr>
-        <th>Recipient</th>
-        <th>Message</th>
-        <th>Received</th>
-        <th>Status</th>
-    </tr>
-</thead>
-<tbody>
-{% for message in messages %}
-<tr class="{{ message.newest_status.status }}">
-    <td class="recipient">{{ message.recipient }}</td>
-    <td class="message"><a href="{% url app.views.detail message_id=message.id %}">{{ message }}</a></td>
-    <td class="received">{{ message.dt_received }}</td>
-    <td class="status">{{ message.newest_status.status }}</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
 {% endblock %}
