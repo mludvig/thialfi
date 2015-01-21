@@ -102,12 +102,11 @@ class Message(models.Model):
     def __unicode__(self):
         return self.sms_body
 
-    def acknowledge(self, dt_acked = None, ack_by = "<unknown>"):
+    def acknowledge(self, ack_by = "<unknown>"):
         if dt_acked is None:
             dt_acked = datetime.datetime.now()
-        info("{%d} ACK by %s @ %s" % (self.id, ack_by, dt_acked))
-        status = MessageStatus(message = self, status = 'acked', dt_status = dt_acked, note = ack_by)
-        status.save()
+        info("{%d} ACK by %s" % (self.id, ack_by))
+        self.add_status('acked', note = ack_by)
 
     def despatch(self):
         if self.get_status('delivered') or self.get_status('expired') or self.get_status('ignored'):
@@ -143,17 +142,17 @@ class Message(models.Model):
             delivery.update_status()
 
     def newest_status(self):
-        ms_set = self.messagestatus_set.order_by("-dt_status")
+        ms_set = self.messagestatus_set.order_by("-pk")
         if ms_set:
             return ms_set[0]
 
-    def add_status(self, status, dt_status = None, note = ""):
+    def add_status(self, status, note = ""):
         if not dt_status:
             dt_status = datetime.datetime.now()
         MessageStatus(message = self, status = status, dt_status = dt_status, note = note).save()
 
     def get_status(self, status):
-        ms_set = self.messagestatus_set.filter(status = status).order_by("-dt_status")
+        ms_set = self.messagestatus_set.filter(status = status).order_by("-pk")
         if ms_set:
             return ms_set[0]
         return None
@@ -173,10 +172,10 @@ class Message(models.Model):
     def sync_acks(self):
         for delivery in self.delivery_set.all():
             for reply in delivery.reply_set.all():
-                self.acknowledge(reply.dt_received, "Reply %d (%s)" % (reply.id, reply.delivery.contact))
+                self.acknowledge("Reply %d from %s @ %s" % (reply.id, reply.delivery.contact, reply.dt_received))
         for phonecall in self.phonecall_set.all():
             if phonecall.dt_acked:
-                self.acknowledge(phonecall.dt_acked, "PhoneCall %s (%s)" % (phonecall.id, phonecall.contact))
+                self.acknowledge("PhoneCall %s - %s @ %s" % (phonecall.id, phonecall.contact, phonecall.dt_acked))
 
     def perform_escalation(self, dry_run = False):
         self.sync_acks()
@@ -188,7 +187,6 @@ class Message(models.Model):
             debug("Received less than ACK-mins ago -> nothing to do")
             return False
 
-        debug("ACK overdue")
         if not self.get_status('called'):
             debug("Not yet called -> call now")
             if not dry_run:
