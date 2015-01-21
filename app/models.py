@@ -66,6 +66,7 @@ class Recipient(models.Model):
     group = models.ForeignKey(Group)
     require_ack_min = models.IntegerField(default = 0, help_text = "Require ACK within X minutes or trigger Escalation. 0 means ACK not required.")
     escalation_group = models.ForeignKey(Group, related_name = "escalation_group", null = True, blank = True, help_text = "Non-ACKed messages will be escalated to this group's primary contact. If not set call the main Group again.")
+    dt_last_called = models.DateTimeField(null = True)
 
     class Meta:
         ordering = ['address']
@@ -75,6 +76,9 @@ class Recipient(models.Model):
 
     def domain(self):
         return settings.RCPT_DOMAIN
+
+    def can_call(self):
+        return (datetime.now() - self.dt_last_called).total_seconds() > settings.CALL_GRACE_MIN * 60
 
 class RecipientAdmin(admin.ModelAdmin):
     list_display = ('address', 'group', 'escalation_group')
@@ -202,12 +206,13 @@ class Message(models.Model):
         if not self.get_status('escalated'):
             debug("Not yet escalated -> escalate now")
             if not dry_run:
-                self.call_escalation_group()
+                return self.call_escalation_group()
             return True
 
         if self.older_than(self.get_timestamp('escalated'), settings.CALL_GRACE_MIN):
             debug("Escalated more than CALL_GRACE_MIN mins ago and not ACKed? -> Try again!")
             if not dry_run:
+                # Call both the Group and Escalation Group if they are different
                 self.call_group()
                 if not self.recipient.escalation_group or self.recipient.escalation_group.contact_primary.sms_number == self.recipient.group.contact_primary.sms_number:
                     debug("Escalation Group not set or same as Primary Contact")
@@ -218,22 +223,27 @@ class Message(models.Model):
 
     def call_group(self):
         message = "Alert for recipient %s. Group %s" % (self.recipient, self.recipient.group)
-        self.make_call(self.recipient.group, message)
+        return self.make_call(self.recipient.group, message)
 
     def call_escalation_group(self):
         if not self.recipient.escalation_group:
             self.add_status('escalated', note = "No escalation group set - call Primary Contact again")
-            self.make_call(self.recipient.group, "Alert for recipient %s. Group %s" % (self.recipient, self.recipient.group))
+            return self.make_call(self.recipient.group, "Alert for recipient %s. Group %s" % (self.recipient, self.recipient.group))
         else:
             self.add_status('escalated', note = "Calling escalation group %s" % self.recipient.escalation_group)
-            self.make_call(self.recipient.escalation_group, "Escalating alert for group %s. Was unable to contact %s." % (self.recipient.group.name, self.recipient.group.contact_primary.name))
+            return self.make_call(self.recipient.escalation_group, "Escalating alert for group %s. Was unable to contact %s." % (self.recipient.group.name, self.recipient.group.contact_primary.name))
 
     def make_call(self, group, text_to_say):
+        if not self.recipient.can_call():
+            self.add_status("not-called", note = "Call already in progress for recipient %s" % self.recipient)
+            return False
         info("Calling '%s' [%s]: %s" % (group, group.contact_primary, text_to_say))
         pc = PhoneCall(message = self, contact = group.contact_primary, text_to_say = text_to_say)
         pc.save()
+        self.recipient.dt_last_called = datetime.now()
         self.add_status('called', note = text_to_say)
         pc.call()
+        return True
 
 @receiver(post_save, sender = Message)
 def message_add_default_status(sender, instance, created, **kwargs):
