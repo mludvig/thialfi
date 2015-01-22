@@ -77,8 +77,14 @@ class Recipient(models.Model):
     def domain(self):
         return settings.RCPT_DOMAIN
 
+    def update_last_called(self):
+        self.dt_last_called = datetime.datetime.now()
+        self.save()
+
     def can_call(self):
-        return (datetime.now() - self.dt_last_called).total_seconds() > settings.CALL_GRACE_MIN * 60
+        if not self.dt_last_called:
+            return True
+        return (datetime.datetime.now() - self.dt_last_called).total_seconds() > settings.CALL_GRACE_MIN * 60
 
 class RecipientAdmin(admin.ModelAdmin):
     list_display = ('address', 'group', 'escalation_group')
@@ -107,8 +113,6 @@ class Message(models.Model):
         return self.sms_body
 
     def acknowledge(self, ack_by = "<unknown>"):
-        if dt_acked is None:
-            dt_acked = datetime.datetime.now()
         info("{%d} ACK by %s" % (self.id, ack_by))
         self.add_status('acked', note = ack_by)
 
@@ -120,7 +124,7 @@ class Message(models.Model):
                 status = 'received',
                 message__recipient = self.recipient,
                 message__dt_received__gt = recent_timestamp)
-        if recent_messages.count() >= settings.RECENT_MESSAGES:
+        if recent_messages.count() > settings.RECENT_MESSAGES:
             message = '%d messages received in the last %d minutes' % (recent_messages.count(), settings.RECENT_MINUTES)
             info("Ignoring message for %s: %s" % (self.recipient, message))
             self.add_status('ignored', note = message)
@@ -151,8 +155,7 @@ class Message(models.Model):
             return ms_set[0]
 
     def add_status(self, status, note = ""):
-        if not dt_status:
-            dt_status = datetime.datetime.now()
+        dt_status = datetime.datetime.now()
         MessageStatus(message = self, status = status, dt_status = dt_status, note = note).save()
 
     def get_status(self, status):
@@ -240,7 +243,7 @@ class Message(models.Model):
         info("Calling '%s' [%s]: %s" % (group, group.contact_primary, text_to_say))
         pc = PhoneCall(message = self, contact = group.contact_primary, text_to_say = text_to_say)
         pc.save()
-        self.recipient.dt_last_called = datetime.now()
+        self.recipient.update_last_called()
         self.add_status('called', note = text_to_say)
         pc.call()
         return True
