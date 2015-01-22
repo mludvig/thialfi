@@ -329,7 +329,7 @@ class Delivery(models.Model):
                     reply.save()
         if not self.message.get_status('acked'):
             for reply in self.reply_set.all():
-                self.message.acknowledge(reply.dt_received, "Reply %d (%s)" % (reply.id, reply.delivery.contact))
+                self.message.acknowledge("SMS: %s (%s)" % (reply.message, reply.delivery.contact))
 
 admin.site.register(Delivery)
 
