@@ -81,10 +81,11 @@ class SmsDriver(GenericSoap.SmsDriver):
         replies_raw = []
 
         replies_fetched_age = datetime.now() - replies_fetched_timestamp
-        if _timedelta_total_seconds(replies_fetched_age) < 60:
+        if _timedelta_total_seconds(replies_fetched_age) < 30:
             debug("SMS(MessageMedia) using cached replies: %s sec old" % (_timedelta_total_seconds(replies_fetched_age)))
         else:
             replies_fetched_timestamp = datetime.now()
+            del replies_fetched
 
             check_replies_t = self.client.service.checkReplies(self.auth)
             if not check_replies_t.replies:
@@ -131,10 +132,11 @@ class SmsDriver(GenericSoap.SmsDriver):
         reports_raw = []
 
         reports_fetched_age = datetime.now() - reports_fetched_timestamp
-        if _timedelta_total_seconds(reports_fetched_age) < 60:
+        if _timedelta_total_seconds(reports_fetched_age) < 30:
             debug("SMS(MessageMedia) using cached delivery reports: %s sec old" % (_timedelta_total_seconds(reports_fetched_age)))
         else:
             reports_fetched_timestamp = datetime.now()
+            del reports_fetched
 
             check_reports_t = self.client.service.checkReports(self.auth)
             if not check_reports_t.reports:
