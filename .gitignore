@@ -3,3 +3,4 @@
 /postfix/*.db
 /postfix/domain
 /postfix/transport
+templates/_gitrev.txt
