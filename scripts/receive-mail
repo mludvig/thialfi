@@ -17,6 +17,7 @@ setup_environ(settings)
 import re
 import email
 import base64
+import time
 
 from app.models import *
 from thialfi.logger import *
@@ -56,8 +57,9 @@ message_email = email.message_from_file(sys.stdin)
 info("MAIL FROM: %s" % sender)
 info("RCPT TO(%d): %s" % (len(recipients), ",".join(recipients)))
 
-info("Subject: %s" % message_email.get("subject"))
-info("Message-ID: %s" % message_email.get("message-id").strip("<>()"))
+info("Subject: %s" % message_email.get("subject", ""))
+default_message_id = "%s@%s" % (time.time(), settings.RCPT_DOMAIN)
+info("Message-ID: %s" % message_email.get("message-id", default_message_id).strip("<>()"))
 
 success = False
 for recipient in recipients:
@@ -74,8 +76,8 @@ for recipient in recipients:
     msg.header, msg.body = message_email.as_string().split("\n\n", 1)
     msg.hdr_sender = sender
     msg.hdr_recipient = recipient
-    msg.hdr_message_id = message_email.get("message-id").strip("<>()")
-    msg.hdr_subject = message_email.get("subject")
+    msg.hdr_message_id = message_email.get("message-id", default_message_id).strip("<>()")
+    msg.hdr_subject = message_email.get("subject", "")
     text_plain_body = find_text_plain(message_email)
     ## Format SMS text - this should be configurable (per-sender rules?)
     msg.sms_body = str(msg.recipient) + "#" + msg.hdr_subject[:75] + "#" + text_plain_body[:300].strip()

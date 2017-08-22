@@ -67,6 +67,10 @@ table.message-detail tr td.label {
 	font-weight: bold;
 }
 
+table.messages-list td.message {
+	max-width: 500px;
+}
+
 .body-content {
     padding-top: 2rem;
 }

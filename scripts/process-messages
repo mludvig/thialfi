@@ -52,7 +52,7 @@ while True:
                 for reply in delivery.reply_set.all():
                     info("{%d} Received reply: %s [%s] %s" % (message.id, reply.sender, reply.dt_received, reply.message))
 
-        if message.get_status('acked'):
+        if message.get_status('acked') or message.get_status('ignored'):
             continue
 
         # See if it needs to be escalated
