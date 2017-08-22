@@ -1,20 +1,20 @@
 1) /etc/postfix/main.cf:
 ------------------------
-relay_domains = hash:/srv/thialfi/postfix/domain
-transport_maps = hash:/srv/thialfi/postfix/transport
+relay_domains = hash:/app/thialfi/postfix/domain
+transport_maps = hash:/app/thialfi/postfix/transport
 
 2) /etc/postfix/master.cf:
 --------------------------
 thialfi   unix  -       n       n       -       -       pipe
-  flags=FRhu  user=nobody argv=/srv/thialfi/scripts/receive-mail ${sender} ${recipient}
+  flags=FRhu  user=nobody argv=/app/thialfi/scripts/receive-mail ${sender} ${recipient}
 
-3) In /srv/thialfi/postfix/
+3) In /app/thialfi/postfix/
 ---------------------------
 - Update 'domain' and 'transport' files
 - Run 'make'
 
-4) /etc/crontab (or some other crontab if you like)
----------------
-## Thialfi - update outstanding messages' status
-*/5 * * * *   nobody  /srv/thialfi/scripts/send-all > /dev/null
-
+4) Install init.d script for process-messages
+---------------------------------------------
+ln -s /app/thialfi/scripts/thialfi-initd /etc/init.d/thialfi
+chkconfig thialfi on
+service thialfi start
