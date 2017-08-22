@@ -78,7 +78,9 @@ for recipient in recipients:
     msg.hdr_subject = message_email.get("subject")
     text_plain_body = find_text_plain(message_email)
     ## Format SMS text - this should be configurable (per-sender rules?)
-    msg.sms_body = str(msg.recipient) + "#" + msg.hdr_subject[:55] + "#" + text_plain_body[:65].strip()
+    msg.sms_body = str(msg.recipient) + "#" + msg.hdr_subject[:75] + "#" + text_plain_body[:300].strip()
+    msg.save()
+    msg.sms_body += " -- https://%s/detail/%d" % (settings.RCPT_DOMAIN, msg.id)
     msg.save()
 
     info("Message: %s" % msg.sms_body)
