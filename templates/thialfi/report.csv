@@ -1,4 +1,4 @@
 # Last week's report
-recipient,received,status
-{% for message in messages %}{{ message.recipient }},{{ message.dt_received|date:"c" }},{{ message.newest_status.status }}
+received,id,status,recipient,group
+{% for message in messages %}{{ message.dt_received|date:"c" }},{{ message.id }},{{ message.newest_status.status }},{{ message.recipient }},{{ message.recipient.group }}
 {% endfor %}
