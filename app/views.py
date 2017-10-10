@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.template import RequestContext
 from django.conf import settings
 from utils import render_template, get_object_or_404
@@ -52,6 +53,12 @@ def twilio(request, template, phonecall_id):
         "text_to_say" : text_to_say,
         "say_press_1" : not acked,
     })
+
+def report_csv(request, template):
+    msg_epoch = datetime.now() - timedelta(weeks=1)
+    messages = Message.objects.filter(dt_received__gt=msg_epoch).order_by('-dt_received')
+
+    return render(request, template, { "messages": messages }, content_type = "text/plain")
 
 def group(request, template, group_id):
     group = get_object_or_404(Group, pk = group_id)

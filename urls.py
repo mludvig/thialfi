@@ -10,6 +10,7 @@ urlpatterns = patterns('',
     (r'^detail/(?P<message_id>\d+)/$', 'app.views.detail', { 'template' : 'thialfi/detail.html' }),
     (r'^group/(?P<group_id>\d+)/$', 'app.views.group', { 'template' : 'thialfi/group.html' }),
     (r'^tw/(?P<phonecall_id>\w+)/$', 'app.views.twilio', { 'template' : 'thialfi/twilio.xml' }),
+    (r'^report.csv$', 'app.views.report_csv', { 'template' : 'thialfi/report.csv' }),
     (r'^admin/', include(admin.site.urls)),
 )
 
