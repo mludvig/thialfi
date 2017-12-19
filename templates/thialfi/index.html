@@ -17,8 +17,8 @@
 <tbody>
 {% for group in groups %}
 <tr>
-<td><a href="{% url app.views.group group_id=group.id %}">{{ group }}</a></td>
-<td><a href="{% url app.views.group group_id=group.id %}">{{ group.contact_primary.name }}</a></td>
+<td><a href="{% url 'views_group' group_id=group.id %}">{{ group }}</a></td>
+<td><a href="{% url 'views_group' group_id=group.id %}">{{ group.contact_primary.name }}</a></td>
 <td>{{ group.contact_primary.sms_number }}</td>
 </tr>
 {% endfor %}

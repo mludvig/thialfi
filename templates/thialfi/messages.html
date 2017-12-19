@@ -19,7 +19,7 @@
 {% for message in messages %}
 <tr class="{{ message.newest_status.status }}">
     <td class="recipient">{{ message.recipient }}</td>
-    <td class="message"><a href="{% url app.views.detail message_id=message.id %}">{{ message.hdr_subject }}</a></td>
+    <td class="message"><a href="{% url 'views_detail' message_id=message.id %}">{{ message.hdr_subject }}</a></td>
     <td class="received">{{ message.dt_received }}</td>
     <td class="status">{{ message.newest_status.status }}</td>
 </tr>

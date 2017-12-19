@@ -79,6 +79,5 @@ def group(request, template, group_id):
             "group" : group,
             "error_message" : error_message,
             "domain" : settings.RCPT_DOMAIN,
-        },
-        context_instance =  RequestContext(request)
+        }
     )

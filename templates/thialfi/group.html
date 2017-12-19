@@ -5,7 +5,7 @@
 
 {% block contentfull %}
 <h3>{{ group }}</h3>
-<form action="{% url app.views.group group.id %}" method="post">
+<form action="{% url 'views_group' group.id %}" method="post">
 {% csrf_token %}
 <strong>Select on-call contact:</strong> <select name="contact">
 {% for contact in group.contacts.all %}

@@ -10,18 +10,16 @@ def render_template(request, *args, **kwargs):
     """
     render_template(request, *args, **kwargs)
 
-    Wrapper around django.shortcuts.render_to_response()
-    that always adds RequestContext parameter
+    Wrapper around django.shortcuts.render()
+    that always adds MEDIA_REV parameter
     """
-    ## Add RequestContext to arguments
-    kwargs.update(context_instance = RequestContext(request))
     ## Add settings.MEDIA_REV to Context
     if len(args) > 1:
         args[1].update(MEDIA_REV = settings.MEDIA_REV)
     else:
         ## Convert from tuple to list and add list member
         args = [ args[0], {'MEDIA_REV' : settings.MEDIA_REV} ]
-    return django.shortcuts.render_to_response(*args, **kwargs)
+    return django.shortcuts.render(request, *args, **kwargs)
 
 def get_object_or_404(*args, **kwargs):
     verbose_object_id = kwargs.has_key('verbose_object_id') and kwargs.pop('verbose_object_id') or ""
