@@ -1,6 +1,3 @@
 *.pyc
-/settings_local*.py
-/postfix/*.db
-/postfix/domain
-/postfix/transport
-/templates/_gitrev.txt
+settings_local*.py
+templates/_gitrev.txt
