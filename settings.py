@@ -39,7 +39,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': force_getenv('DB_NAME')
+        'NAME': force_getenv('DB_NAME'),
         'USER': force_getenv('DB_USER'),
         'PASSWORD': force_getenv('DB_PASSWORD'),
         'HOST': force_getenv('DB_HOST'),
