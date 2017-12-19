@@ -1,8 +1,15 @@
 # Django settings for thialfi project.
 
 ## -- Python Setup -- ##
+from os import getenv as os_getenv
 import os.path
 import sys
+
+def force_getenv(var_name):
+    var_value = os_getenv(var_name)
+    if var_value == None:
+        raise Exception("Environ variable $%s not set" % var_name)
+    return var_value
 
 PROJECT_ROOT = os.path.dirname(__file__)
 sys.path.insert(0, PROJECT_ROOT)
@@ -29,18 +36,20 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASE_ENGINE = 'mysql'              # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = 'thialfi'              # Or path to database file if using sqlite3.
-DATABASE_USER = 'thialfi'              # Not used with sqlite3.
-DATABASE_PASSWORD = 'thialfi'     # Not used with sqlite3.
-DATABASE_HOST = 'localhost' # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': force_getenv('DB_NAME')
+        'USER': force_getenv('DB_USER'),
+        'PASSWORD': force_getenv('DB_PASSWORD'),
+        'HOST': force_getenv('DB_HOST'),
+        'PORT': os_getenv('DB_PORT', 3306),
+    }
+}
 
-RCPT_DOMAIN = "sms.your.domain"
+RCPT_DOMAIN = force_getenv('RCPT_DOMAIN')
 
-## The URL for voice messages. %(path)s will be substitued by the actual path.
-## This must be accessible from outside.
-VOICE_URL = "https://sms.your.domain/%(path)s"
+VOICE_URL = "https://" + RCPT_DOMAIN + "/%(path)s"
 
 ## SMS Engine setup
 SMS_ENGINE = "MessageMedia"
