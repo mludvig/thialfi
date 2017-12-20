@@ -26,7 +26,7 @@ class Contact(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s (%s)" % (self.name, self.sms_number)
 
 admin.site.register(Contact)
@@ -43,7 +43,7 @@ class Group(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.name)
 
     def set_contact_primary(self, contact):
@@ -72,7 +72,7 @@ class Recipient(models.Model):
     class Meta:
         ordering = ['address']
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.address)
 
     def domain(self):
@@ -110,7 +110,7 @@ class Message(models.Model):
     # Timestamp
     dt_received = models.DateTimeField(auto_now_add = True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.sms_body
 
     def acknowledge(self, ack_by = "<unknown>"):
@@ -280,7 +280,7 @@ class MessageStatus(models.Model):
     dt_status = models.DateTimeField(null = False, editable = False)
     note = models.CharField(max_length = 500, default = "", editable = False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s %s [%s]" % (self.dt_status.strftime("%Y-%m-%d %H:%M:%S"), self.status, self.note)
 
 ### Delivery model
@@ -297,7 +297,7 @@ class Delivery(models.Model):
     class Meta:
         verbose_name_plural = "Deliveries"
 
-    def __unicode__(self):
+    def __str__(self):
         return "to:%s @%s (%s)" % (self.contact, self.dt_despatched, self.status.split(" ")[0])
 
     def update_status(self):
@@ -347,7 +347,7 @@ class Reply(models.Model):
     class Meta:
         verbose_name_plural = "Replies"
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s [%s] %s" % (self.sender, self.dt_received, self.message)
 
 class ReplyAdmin(admin.ModelAdmin):
@@ -381,7 +381,7 @@ class PhoneCall(RandomPrimaryIdModel):
         abstract = False
         ordering = ['-dt_queued']
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s:%s@%s" % (self.status, self.number_called, self.dt_queued)
 
     def call(self):
