@@ -182,4 +182,4 @@ USE_L10N = False
 
 STATIC_URL = '/static/'
 
-from .settings_local import *
+from settings_local import *
