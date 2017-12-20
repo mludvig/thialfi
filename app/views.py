@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.template import RequestContext
 from django.conf import settings
+from django.utils import timezone
 from utils import render_template, get_object_or_404
 from models import *
 from datetime import timedelta, datetime
@@ -18,7 +19,7 @@ def index(request, template):
 
 def messages(request, template):
     # Display only last 1 week worth of messages
-    msg_epoch = datetime.now() - timedelta(weeks=1)
+    msg_epoch = timezone.now() - timedelta(weeks=1)
     messages = Message.objects.filter(dt_received__gt=msg_epoch).order_by('-dt_received')
     groups = Group.objects.all()
 
@@ -46,7 +47,7 @@ def twilio(request, template, phonecall_id):
             error("Received SID != stored SID: '%s' != '%s'" % (request.GET.get('CallSid'), phonecall.call_id))
         else:
             phonecall.status = request.GET.get('CallStatus')
-            phonecall.dt_acked = datetime.now()
+            phonecall.dt_acked = timezone.now()
             phonecall.message.acknowledge("PhoneCall %s (%s)" % (phonecall.status, phonecall.contact))
             phonecall.save()
     return render_template(request, template, {
@@ -55,7 +56,7 @@ def twilio(request, template, phonecall_id):
     })
 
 def report_csv(request, template):
-    msg_epoch = datetime.now() - timedelta(weeks=1)
+    msg_epoch = timezone.now() - timedelta(weeks=1)
     messages = Message.objects.filter(dt_received__gt=msg_epoch).order_by('-dt_received')
 
     return render(request, template, { "messages": messages }, content_type = "text/plain")

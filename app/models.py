@@ -6,6 +6,7 @@ from django.core.validators import RegexValidator
 from django.contrib import admin
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.utils import timezone
 
 from thialfi.logger import *
 from thialfi.voice import twiliogw
@@ -78,13 +79,13 @@ class Recipient(models.Model):
         return settings.RCPT_DOMAIN
 
     def update_last_called(self):
-        self.dt_last_called = datetime.datetime.now()
+        self.dt_last_called = timezone.now()
         self.save()
 
     def can_call(self):
         if not self.dt_last_called:
             return True
-        return (datetime.datetime.now() - self.dt_last_called).total_seconds() > settings.CALL_GRACE_MIN * 60
+        return (timezone.now() - self.dt_last_called).total_seconds() > settings.CALL_GRACE_MIN * 60
 
 class RecipientAdmin(admin.ModelAdmin):
     list_display = ('address', 'group', 'escalation_group')
@@ -119,7 +120,7 @@ class Message(models.Model):
     def despatch(self):
         if self.get_status('delivered') or self.get_status('expired') or self.get_status('ignored'):
             return
-        recent_timestamp = datetime.datetime.now() - datetime.timedelta(minutes = settings.RECENT_MINUTES)
+        recent_timestamp = timezone.now() - datetime.timedelta(minutes = settings.RECENT_MINUTES)
         recent_messages = MessageStatus.objects.filter(
                 status = 'received',
                 message__recipient = self.recipient,
@@ -155,7 +156,7 @@ class Message(models.Model):
             return ms_set[0]
 
     def add_status(self, status, note = ""):
-        dt_status = datetime.datetime.now()
+        dt_status = timezone.now()
         MessageStatus(message = self, status = status, dt_status = dt_status, note = note).save()
 
     def get_status(self, status):
@@ -171,7 +172,7 @@ class Message(models.Model):
         return None
 
     def older_than(self, timestamp, minutes):
-        return bool(timestamp) and timestamp + datetime.timedelta(minutes = minutes) < datetime.datetime.now()
+        return bool(timestamp) and timestamp + datetime.timedelta(minutes = minutes) < timezone.now()
 
     def is_overdue(self):
         return self.process_escalation(dry_run = True)
