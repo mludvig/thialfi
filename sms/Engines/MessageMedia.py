@@ -5,7 +5,7 @@
 from logger import *
 from sms.Exceptions import SmsError
 from sms.SimpleObjects import *
-import GenericSoap
+from . import GenericSoap
 
 import os
 import random

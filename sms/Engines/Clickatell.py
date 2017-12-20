@@ -5,7 +5,7 @@
 from logger import *
 from sms.Exceptions import SmsError
 from sms.SimpleObjects import SmsDeliveryStatus
-import GenericHttp
+from . import GenericHttp
 
 class SmsDriver(GenericHttp.SmsDriver):
     url_pattern = "https://api.clickatell.com/http/sendmsg?api_id=%(api_id)s&user=%(username)s&password=%(password)s&to=%(recipient)s&text=%(message)s"

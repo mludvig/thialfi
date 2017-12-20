@@ -5,7 +5,7 @@
 from logger import *
 from sms.Exceptions import SmsError
 from sms.SimpleObjects import SmsDeliveryStatus
-import GenericHttp
+from . import GenericHttp
 
 class SmsDriver(GenericHttp.SmsDriver):
     url_pattern = "https://www.smsglobal.com/http-api.php?action=sendsms&user=%(username)s&password=%(password)s&from=%(sender)s&to=%(recipient)s&text=%(message)s"
