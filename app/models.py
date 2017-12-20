@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.validators import RegexValidator
 from django.contrib import admin
 from django.dispatch import receiver
@@ -38,7 +38,7 @@ class Group(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank = True)
     contacts = models.ManyToManyField(Contact)
-    contact_primary = models.ForeignKey(Contact, related_name = "contact_primary", help_text = "On-call contact")
+    contact_primary = models.ForeignKey(Contact, related_name = "contact_primary", help_text = "On-call contact", on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['name']
@@ -64,9 +64,9 @@ __all__.append("Recipient")
 class Recipient(models.Model):
     address = models.CharField(max_length=500, help_text = 'Use only lowercase letters, digits and hyphens', validators = [ RegexValidator(r'^[a-z][a-z0-9\._-]+$', 'Use only lowercase letters, digits and hyphens') ])
     description = models.TextField(blank = True)
-    group = models.ForeignKey(Group)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
     require_ack_min = models.IntegerField(default = 0, help_text = "Require ACK within X minutes or trigger Escalation. 0 means ACK not required.")
-    escalation_group = models.ForeignKey(Group, related_name = "escalation_group", null = True, blank = True, help_text = "Non-ACKed messages will be escalated to this group's primary contact. If not set call the main Group again.")
+    escalation_group = models.ForeignKey(Group, related_name = "escalation_group", null = True, blank = True, help_text = "Non-ACKed messages will be escalated to this group's primary contact. If not set call the main Group again.", on_delete=models.CASCADE)
     dt_last_called = models.DateTimeField(null = True)
 
     class Meta:
@@ -106,7 +106,7 @@ class Message(models.Model):
     hdr_recipient = models.CharField(max_length=500)
     hdr_message_id = models.CharField(max_length=500)
     # Resolved recipient
-    recipient = models.ForeignKey(Recipient)
+    recipient = models.ForeignKey(Recipient, on_delete=models.CASCADE)
     # Timestamp
     dt_received = models.DateTimeField(auto_now_add = True)
 
@@ -275,7 +275,7 @@ class MessageStatus(models.Model):
         ('escalated', 'escalated'),
         ('acked', 'acked'),
     )
-    message = models.ForeignKey(Message)
+    message = models.ForeignKey(Message, on_delete=models.CASCADE)
     status = models.CharField(max_length = 20, choices = STATUSES, null = False, editable = False)
     dt_status = models.DateTimeField(null = False, editable = False)
     note = models.CharField(max_length = 500, default = "", editable = False)
@@ -287,8 +287,8 @@ class MessageStatus(models.Model):
 
 __all__.append("Delivery")
 class Delivery(models.Model):
-    message = models.ForeignKey(Message)
-    contact = models.ForeignKey(Contact)
+    message = models.ForeignKey(Message, on_delete=models.CASCADE)
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
     sms_id = models.CharField(max_length=100)
     dt_despatched = models.DateTimeField(auto_now_add = True)
     dt_status = models.DateTimeField(blank = True, null = True)
@@ -338,7 +338,7 @@ admin.site.register(Delivery)
 
 __all__.append("Reply")
 class Reply(models.Model):
-    delivery = models.ForeignKey(Delivery)
+    delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE)
     sender = models.CharField(max_length=100)
     reply_id = models.CharField(max_length=100)
     dt_received = models.DateTimeField(auto_now_add = True)
@@ -364,8 +364,8 @@ admin.site.register(Reply, ReplyAdmin)
 
 __all__.append("PhoneCall")
 class PhoneCall(RandomPrimaryIdModel):
-    message = models.ForeignKey(Message)
-    contact = models.ForeignKey(Contact)
+    message = models.ForeignKey(Message, on_delete=models.CASCADE)
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
     number_called = models.CharField(max_length = 200)
     call_id = models.CharField(max_length = 200, null = True)
     status = models.CharField(max_length = 200, null = True)
