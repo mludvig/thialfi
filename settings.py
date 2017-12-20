@@ -50,6 +50,8 @@ RCPT_DOMAIN = force_getenv('RCPT_DOMAIN')
 
 VOICE_URL = "https://" + RCPT_DOMAIN + "/%(path)s"
 
+ALLOWED_HOSTS = [ RCPT_DOMAIN ]
+
 ## SMS Engine setup
 SMS_ENGINE = "MessageMedia"
 # Various engines may have different options.
