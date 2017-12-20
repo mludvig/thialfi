@@ -10,7 +10,7 @@ urlpatterns = [
     url(r'^messages/$', app.views.messages, { 'template' : 'thialfi/messages.html' }, name = "views_messages"),
     url(r'^detail/(?P<message_id>\d+)/$', app.views.detail, { 'template' : 'thialfi/detail.html' }, name = "views_detail"),
     url(r'^group/(?P<group_id>\d+)/$', app.views.group, { 'template' : 'thialfi/group.html' }, name = "views_group"),
-    url(r'^tw/(?P<phonecall_id>\w+)/$', app.views.twilio, { 'template' : 'thialfi/twilio.xml' }),
+    url(r'^tw/(?P<phonecall_id>\w+)/$', app.views.twilio, { 'template' : 'thialfi/twilio.xml' }, name = "views_twilio"),
     url(r'^report.csv$', app.views.report_csv, { 'template' : 'thialfi/report.csv' }),
     url(r'^admin/', admin.site.urls),
 ]
