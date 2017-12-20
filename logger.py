@@ -7,14 +7,14 @@ __all__ = ['debug', 'info', 'warning', 'error']
 # Make the debugging output a bit nicer.
 global _thialfi_logger_dir_base
 _thialfi_logger_dir_base = ""
-def findCaller():
+def findCaller(stack_info):
     global _thialfi_logger_dir_base
     if not _thialfi_logger_dir_base:
         _thialfi_logger_dir_base = os.path.dirname(__file__)
     f = sys._getframe(3)
     if f is not None:
         f = f.f_back
-    rv = "(unknown file)", 0, "(unknown function)"
+    rv = "(unknown file)", 0, "(unknown function)", stack_info
     if hasattr(f, "f_code"):
         co = f.f_code
         filename = os.path.normcase(co.co_filename)
@@ -22,11 +22,11 @@ def findCaller():
             filename = os.path.relpath(filename, _thialfi_logger_dir_base)
         elif filename.startswith("./"):
             filename = filename[2:]
-        rv = (filename, f.f_lineno, co.co_name)
+        rv = (filename, f.f_lineno, co.co_name, stack_info)
     return rv
 
 def deunicode(msg):
-    if type(msg) == unicode:
+    if type(msg) == str:
         return unicodedata.normalize('NFKD', msg).encode('ascii','ignore')
     else:
         return str(msg)

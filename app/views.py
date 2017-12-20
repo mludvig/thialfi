@@ -3,8 +3,8 @@ from django.shortcuts import render
 from django.template import RequestContext
 from django.conf import settings
 from django.utils import timezone
-from utils import render_template, get_object_or_404
-from models import *
+from .utils import render_template, get_object_or_404
+from .models import *
 from datetime import timedelta, datetime
 from thialfi.logger import *
 
@@ -64,7 +64,7 @@ def report_csv(request, template):
 def group(request, template, group_id):
     group = get_object_or_404(Group, pk = group_id)
     error_message = ""
-    if request.POST.has_key('contact'):
+    if 'contact' in request.POST:
         try:
             contact = group.contacts.get(pk = request.POST['contact'])
             if contact == group.contact_primary:

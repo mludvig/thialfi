@@ -12,7 +12,7 @@ import random
 from datetime import datetime
 try:
     from suds.client import Client, ObjectCache
-except ImportError, e:
+except ImportError as e:
     raise SmsError("Module 'suds' not found. Please install python-suds package.")
 
 replies_fetched = []

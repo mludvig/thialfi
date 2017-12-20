@@ -12,7 +12,7 @@ from thialfi.logger import *
 from thialfi.voice import twiliogw
 import datetime
 from sms import smsgw
-from random_primary import RandomPrimaryIdModel
+from .random_primary import RandomPrimaryIdModel
 
 __all__ = []
 
@@ -26,8 +26,8 @@ class Contact(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.sms_number)
+    def __str__(self):
+        return "%s (%s)" % (self.name, self.sms_number)
 
 admin.site.register(Contact)
 
@@ -43,8 +43,8 @@ class Group(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
-        return unicode(self.name)
+    def __str__(self):
+        return str(self.name)
 
     def set_contact_primary(self, contact):
         assert(contact in self.contacts.all())
@@ -72,8 +72,8 @@ class Recipient(models.Model):
     class Meta:
         ordering = ['address']
 
-    def __unicode__(self):
-        return unicode(self.address)
+    def __str__(self):
+        return str(self.address)
 
     def domain(self):
         return settings.RCPT_DOMAIN
@@ -110,7 +110,7 @@ class Message(models.Model):
     # Timestamp
     dt_received = models.DateTimeField(auto_now_add = True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.sms_body
 
     def acknowledge(self, ack_by = "<unknown>"):
@@ -280,8 +280,8 @@ class MessageStatus(models.Model):
     dt_status = models.DateTimeField(null = False, editable = False)
     note = models.CharField(max_length = 500, default = "", editable = False)
 
-    def __unicode__(self):
-        return u"%s %s [%s]" % (self.dt_status.strftime("%Y-%m-%d %H:%M:%S"), self.status, self.note)
+    def __str__(self):
+        return "%s %s [%s]" % (self.dt_status.strftime("%Y-%m-%d %H:%M:%S"), self.status, self.note)
 
 ### Delivery model
 
@@ -297,8 +297,8 @@ class Delivery(models.Model):
     class Meta:
         verbose_name_plural = "Deliveries"
 
-    def __unicode__(self):
-        return u"to:%s @%s (%s)" % (self.contact, self.dt_despatched, self.status.split(" ")[0])
+    def __str__(self):
+        return "to:%s @%s (%s)" % (self.contact, self.dt_despatched, self.status.split(" ")[0])
 
     def update_status(self):
         if not self.status.startswith("DELIVERED"):
@@ -347,8 +347,8 @@ class Reply(models.Model):
     class Meta:
         verbose_name_plural = "Replies"
 
-    def __unicode__(self):
-        return u"%s [%s] %s" % (self.sender, self.dt_received, self.message)
+    def __str__(self):
+        return "%s [%s] %s" % (self.sender, self.dt_received, self.message)
 
 class ReplyAdmin(admin.ModelAdmin):
     list_display = ('dt_received', 'message', 'sender', 'delivery_message')
@@ -381,8 +381,8 @@ class PhoneCall(RandomPrimaryIdModel):
         abstract = False
         ordering = ['-dt_queued']
 
-    def __unicode__(self):
-        return u"%s:%s@%s" % (self.status, self.number_called, self.dt_queued)
+    def __str__(self):
+        return "%s:%s@%s" % (self.status, self.number_called, self.dt_queued)
 
     def call(self):
         if not self.number_called:

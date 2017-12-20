@@ -2,7 +2,7 @@
 
 import sys
 try:
-    execfile(sys.argv[1])
-    print locals()[sys.argv[2]]
+    exec(compile(open(sys.argv[1]).read(), sys.argv[1], 'exec'))
+    print(locals()[sys.argv[2]])
 except:
     pass
