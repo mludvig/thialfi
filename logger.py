@@ -26,7 +26,7 @@ def findCaller():
     return rv
 
 def deunicode(msg):
-    if type(msg) == unicode:
+    if type(msg) == str:
         return unicodedata.normalize('NFKD', msg).encode('ascii','ignore')
     else:
         return str(msg)

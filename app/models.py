@@ -12,7 +12,7 @@ from thialfi.logger import *
 from thialfi.voice import twiliogw
 import datetime
 from sms import smsgw
-from random_primary import RandomPrimaryIdModel
+from .random_primary import RandomPrimaryIdModel
 
 __all__ = []
 
@@ -27,7 +27,7 @@ class Contact(models.Model):
         ordering = ['name']
 
     def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.sms_number)
+        return "%s (%s)" % (self.name, self.sms_number)
 
 admin.site.register(Contact)
 
@@ -44,7 +44,7 @@ class Group(models.Model):
         ordering = ['name']
 
     def __unicode__(self):
-        return unicode(self.name)
+        return str(self.name)
 
     def set_contact_primary(self, contact):
         assert(contact in self.contacts.all())
@@ -73,7 +73,7 @@ class Recipient(models.Model):
         ordering = ['address']
 
     def __unicode__(self):
-        return unicode(self.address)
+        return str(self.address)
 
     def domain(self):
         return settings.RCPT_DOMAIN
@@ -281,7 +281,7 @@ class MessageStatus(models.Model):
     note = models.CharField(max_length = 500, default = "", editable = False)
 
     def __unicode__(self):
-        return u"%s %s [%s]" % (self.dt_status.strftime("%Y-%m-%d %H:%M:%S"), self.status, self.note)
+        return "%s %s [%s]" % (self.dt_status.strftime("%Y-%m-%d %H:%M:%S"), self.status, self.note)
 
 ### Delivery model
 
@@ -298,7 +298,7 @@ class Delivery(models.Model):
         verbose_name_plural = "Deliveries"
 
     def __unicode__(self):
-        return u"to:%s @%s (%s)" % (self.contact, self.dt_despatched, self.status.split(" ")[0])
+        return "to:%s @%s (%s)" % (self.contact, self.dt_despatched, self.status.split(" ")[0])
 
     def update_status(self):
         if not self.status.startswith("DELIVERED"):
@@ -348,7 +348,7 @@ class Reply(models.Model):
         verbose_name_plural = "Replies"
 
     def __unicode__(self):
-        return u"%s [%s] %s" % (self.sender, self.dt_received, self.message)
+        return "%s [%s] %s" % (self.sender, self.dt_received, self.message)
 
 class ReplyAdmin(admin.ModelAdmin):
     list_display = ('dt_received', 'message', 'sender', 'delivery_message')
@@ -382,7 +382,7 @@ class PhoneCall(RandomPrimaryIdModel):
         ordering = ['-dt_queued']
 
     def __unicode__(self):
-        return u"%s:%s@%s" % (self.status, self.number_called, self.dt_queued)
+        return "%s:%s@%s" % (self.status, self.number_called, self.dt_queued)
 
     def call(self):
         if not self.number_called:

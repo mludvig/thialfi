@@ -5,14 +5,14 @@
 from logger import *
 from sms.Exceptions import SmsError
 from sms.SimpleObjects import *
-import GenericSoap
+from . import GenericSoap
 
 import os
 import random
 from datetime import datetime
 try:
     from suds.client import Client, ObjectCache
-except ImportError, e:
+except ImportError as e:
     raise SmsError("Module 'suds' not found. Please install python-suds package.")
 
 replies_fetched = []

@@ -4,7 +4,7 @@ import django.http
 from django.template import RequestContext
 from django.conf import settings
 
-from exceptions import *
+from .exceptions import *
 
 def render_template(request, *args, **kwargs):
     """
@@ -22,10 +22,10 @@ def render_template(request, *args, **kwargs):
     return django.shortcuts.render(request, *args, **kwargs)
 
 def get_object_or_404(*args, **kwargs):
-    verbose_object_id = kwargs.has_key('verbose_object_id') and kwargs.pop('verbose_object_id') or ""
+    verbose_object_id = 'verbose_object_id' in kwargs and kwargs.pop('verbose_object_id') or ""
 
     try:
         return django.shortcuts.get_object_or_404(*args, **kwargs)
-    except django.http.Http404, e:
+    except django.http.Http404 as e:
         raise exceptions.Http404(id = verbose_object_id)
 

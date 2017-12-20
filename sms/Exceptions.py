@@ -7,7 +7,7 @@ class SmsException(Exception):
         self.message = message
 
     def __str__(self):
-        return unicode(self)
+        return str(self)
 
     def __unicode__(self):
         return self.message
