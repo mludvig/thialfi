@@ -22,7 +22,7 @@ from datetime import datetime, timedelta
 from time import sleep
 from app.models import *
 
-last_run_timestamp = datetime.fromtimestamp(0)
+last_run_timestamp = timezone.now()
 while True:
     wait_sec = 60 - (timezone.now() - last_run_timestamp).total_seconds()
     if wait_sec > 0:
