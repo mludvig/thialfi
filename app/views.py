@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.template import RequestContext
 from django.conf import settings
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from .utils import render_template, get_object_or_404
 from .models import *
 from datetime import timedelta, datetime
@@ -34,6 +35,7 @@ def detail(request, template, message_id):
         "message" : message
     })
 
+@csrf_exempt
 def twilio(request, template, phonecall_id):
     debug("twilio request for PhoneCall=%s" % phonecall_id)
     debug("GET: %r" % request.GET)
