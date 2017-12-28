@@ -5,6 +5,8 @@ from os import getenv as os_getenv
 import os.path
 import sys
 
+import dj_database_url
+
 def force_getenv(var_name):
     var_value = os_getenv(var_name)
     if var_value == None:
@@ -35,15 +37,9 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+# Configure database from $DATABASE_URL:
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': force_getenv('DB_NAME'),
-        'USER': force_getenv('DB_USER'),
-        'PASSWORD': force_getenv('DB_PASSWORD'),
-        'HOST': force_getenv('DB_HOST'),
-        'PORT': os_getenv('DB_PORT', 3306),
-    }
+    'default': dj_database_url.config(default=force_getenv('DATABASE_URL'), conn_max_age=600)
 }
 
 RCPT_DOMAIN = force_getenv('RCPT_DOMAIN')
